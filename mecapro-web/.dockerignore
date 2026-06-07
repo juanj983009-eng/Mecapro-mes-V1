@@ -1,0 +1,13 @@
+# Excluir dependencias locales pesadas
+node_modules
+npm-debug.log
+
+# Excluir compilados locales de desarrollo
+build
+dist
+
+# Archivos de configuración de editores e historial
+.git
+.gitignore
+.vscode
+.env.local

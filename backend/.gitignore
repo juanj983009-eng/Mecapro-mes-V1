@@ -1,0 +1,15 @@
+# --- MAVEN & JAVA SPECIFIC ---
+target/
+!.mvn/wrapper/maven-wrapper.properties
+classworld.conf
+.mtj.tmp/
+
+# Compilados e imágenes de ejecución
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Logs del servidor
+*.log
