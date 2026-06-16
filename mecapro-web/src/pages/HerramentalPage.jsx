@@ -15,17 +15,27 @@ export default function HerramentalPage() {
   const [cantidades, setCantidades] = useState({});
   const [enviando, setEnviando] = useState(null);
 
-  useEffect(() => { cargar(); }, []);
+  // Estados de paginacion
+  const [pagina, setPagina] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const cargar = async () => {
+  useEffect(() => {
+    cargar(pagina);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagina]);
+
+  const cargar = async (page = pagina) => {
     try {
       setLoading(true);
       const [herRes, histRes] = await Promise.all([
-        recursosApi.listarHerramientas(),
+        recursosApi.listarHerramientas(page, 10),
         solicitudesApi.historialOperario(DNI_OPERARIO)
       ]);
-      setHerramientas(herRes.data);
-      setHistorial(histRes.data.filter(s => s.tipoRecurso === 'HERRAMIENTA').slice(0, 10));
+      const herData = herRes.data.content || herRes.data || [];
+      const histData = histRes.data.content || histRes.data || [];
+      setHerramientas(herData);
+      setHistorial(histData.filter(s => s.tipoRecurso === 'HERRAMIENTA').slice(0, 10));
+      setTotalPages(herRes.data.totalPages || 1);
     } catch {
       setAlerta({ tipo: 'error', mensaje: 'Error al cargar herramental.' });
     } finally {
@@ -44,7 +54,7 @@ export default function HerramentalPage() {
         cantidad: Number(cantidad)
       });
       setAlerta({ tipo: 'success', mensaje: `✅ Solicitud enviada: ${cantidad}x ${herramienta.nombreEspecifico}` });
-      cargar();
+      cargar(pagina);
     } catch (err) {
       setAlerta({ tipo: 'error', mensaje: err.response?.data?.mensaje || 'Error al solicitar.' });
     } finally {
@@ -54,12 +64,20 @@ export default function HerramentalPage() {
 
   if (loading) return <div className="loading-overlay"><div className="spinner"></div></div>;
 
-  const categorias = [...new Set(herramientas.map(h => h.categoria))];
   const filtradas = filtro
     ? herramientas.filter(h =>
         h.nombreEspecifico.toLowerCase().includes(filtro.toLowerCase()) ||
         h.categoria.toLowerCase().includes(filtro.toLowerCase()))
     : herramientas;
+
+  const agrupadas = (filtro ? filtradas : herramientas).reduce((acc, h) => {
+    const cat = filtro ? 'Resultados' : (h.categoria || 'Sin Categoría');
+    if (!acc[cat]) {
+      acc[cat] = [];
+    }
+    acc[cat].push(h);
+    return acc;
+  }, {});
 
   return (
     <div>
@@ -83,8 +101,8 @@ export default function HerramentalPage() {
       {alerta && <AlertaBanner tipo={alerta.tipo} mensaje={alerta.mensaje} onClose={() => setAlerta(null)} />}
 
       {/* Vista por categorías */}
-      {(filtro ? ['Resultados'] : categorias).map(cat => {
-        const items = filtro ? filtradas : herramientas.filter(h => h.categoria === cat);
+      {Object.keys(agrupadas).map(cat => {
+        const items = agrupadas[cat];
         if (items.length === 0) return null;
         return (
           <div key={cat} className="card" style={{ marginBottom: 20 }}>
@@ -138,7 +156,7 @@ export default function HerramentalPage() {
                           style={{ minHeight: 40 }}
                         >
                           <Send size={14} />
-                          {enviando === h.idRecurso ? '...' : 'Solicitar'}
+                          {enviando === h.idRecurso ? 'Procesando...' : 'Solicitar'}
                         </button>
                       </td>
                     </tr>
@@ -149,6 +167,40 @@ export default function HerramentalPage() {
           </div>
         );
       })}
+
+      {/* Controles de paginacion */}
+      {herramientas.length > 0 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px 24px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: '14px',
+          marginBottom: 20
+        }}>
+          <button
+            className="btn btn-outline"
+            disabled={pagina === 0}
+            onClick={() => setPagina(p => Math.max(0, p - 1))}
+            style={{ minHeight: 64, padding: '0 24px', fontSize: '1rem', cursor: 'pointer' }}
+          >
+            Anterior
+          </button>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+            Página {pagina + 1} de {totalPages}
+          </span>
+          <button
+            className="btn btn-outline"
+            disabled={pagina + 1 >= totalPages}
+            onClick={() => setPagina(p => p + 1)}
+            style={{ minHeight: 64, padding: '0 24px', fontSize: '1rem', cursor: 'pointer' }}
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
 
       {historial.length > 0 && (
         <div className="card">

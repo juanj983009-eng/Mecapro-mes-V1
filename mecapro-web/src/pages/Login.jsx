@@ -10,7 +10,7 @@ function Particle({ style }) {
       position: 'absolute',
       width: 3, height: 3,
       borderRadius: '50%',
-      background: 'rgba(124,58,237,0.45)',
+      background: 'rgba(253, 128, 46, 0.25)',
       ...style,
     }} />
   );
@@ -55,12 +55,10 @@ export default function Login({ onLoginSuccess }) {
   /* Hover handlers del btn de ingreso */
   const handleBtnEnter = (e) => {
     if (loading) return;
-    e.currentTarget.style.boxShadow = '0 0 40px rgba(124,58,237,0.60), 0 8px 32px rgba(124,58,237,0.45)';
-    e.currentTarget.style.filter   = 'brightness(1.08)';
+    e.currentTarget.style.filter = 'brightness(1.08)';
   };
   const handleBtnLeave = (e) => {
-    e.currentTarget.style.boxShadow = '0 0 24px rgba(124,58,237,0.35), 0 4px 16px rgba(124,58,237,0.25)';
-    e.currentTarget.style.filter   = 'none';
+    e.currentTarget.style.filter = 'none';
   };
 
   return (
@@ -70,15 +68,15 @@ export default function Login({ onLoginSuccess }) {
       alignItems:      'center',
       justifyContent:  'center',
       minHeight:       '100vh',
-      background:      'var(--bg-main)',                 /* #08060D */
+      background:      'var(--hmi-bg-main)',                 /* Charcoal base */
       padding:         16,
       position:        'relative',
       overflow:        'hidden',
     }}>
-      {/* Gradiente radial de fondo — aura violeta central */}
+      {/* Gradiente radial de fondo — aura sutil Pumpkin central */}
       <div style={{
         position:     'absolute', top: 0, left: 0, right: 0, bottom: 0,
-        background:   'radial-gradient(ellipse 70% 50% at 50% 40%, rgba(124,58,237,0.08) 0%, transparent 65%)',
+        background:   'radial-gradient(ellipse 70% 50% at 50% 40%, rgba(253, 128, 46, 0.03) 0%, transparent 65%)',
         pointerEvents:'none',
       }} />
 
@@ -94,7 +92,7 @@ export default function Login({ onLoginSuccess }) {
         fontFamily:'var(--font-mono)',
         fontVariantNumeric: 'tabular-nums',
         fontSize:  '0.72rem',
-        color:     'rgba(124,58,237,0.50)',
+        color:     'var(--hmi-text-muted)',
         letterSpacing: '0.5px',
       }}>
         {hora.toLocaleTimeString('es-PE')}
@@ -106,59 +104,42 @@ export default function Login({ onLoginSuccess }) {
       <div style={{
         maxWidth:     460,
         width:        '100%',
-        background:   '#120E1E',
-        border:       '1px solid rgba(124,58,237,0.22)',
-        borderRadius: 16,
+        background:   'var(--hmi-bg-surface)',
+        border:       '1px solid var(--hmi-bg-surface-elevated)',
+        borderRadius: 4,
         padding:      '40px 36px',
-        boxShadow:    '0 24px 80px rgba(0,0,0,0.70), 0 0 0 1px rgba(124,58,237,0.08)',
+        boxShadow:    'none',
         position:     'relative',
         overflow:     'hidden',
       }}>
-        {/* Línea decorativa de acento superior */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.60), transparent)',
-        }} />
-        {/* Brillo de esquina */}
-        <div style={{
-          position: 'absolute', top: -40, right: -40,
-          width: 120, height: 120,
-          background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
-          borderRadius: '50%',
-          pointerEvents: 'none',
-        }} />
-
         {/* ── Logo y título ── */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          {/* Ícono de escudo con aura violeta */}
+          {/* Ícono de escudo plano */}
           <div style={{
             display:        'inline-flex',
             alignItems:     'center',
             justifyContent: 'center',
             width:          72, height: 72,
-            borderRadius:   18,
-            background:     'linear-gradient(135deg, rgba(124,58,237,0.22), rgba(37,99,235,0.12))',
-            border:         '1px solid rgba(124,58,237,0.35)',
-            boxShadow:      '0 0 32px rgba(124,58,237,0.28)',
+            borderRadius:   4,
+            background:     'var(--hmi-bg-surface-elevated)',
+            border:         '1px solid var(--hmi-bg-surface-elevated)',
+            boxShadow:      'none',
             marginBottom:   20,
           }}>
-            <ShieldCheck size={36} style={{ color: '#A78BFA' }} />
+            <ShieldCheck size={36} style={{ color: 'var(--hmi-accent)' }} />
           </div>
 
           <h2 style={{
             fontSize:   '1.7rem',
             fontWeight: 900,
             margin:     0,
-            background: 'linear-gradient(135deg, #EDE9F8, #C4B5FD)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor:  'transparent',
-            backgroundClip:       'text',
+            color:      'var(--hmi-text-main)',
             letterSpacing:        '-0.5px',
           }}>
             Meca-PRO MES
           </h2>
           <p style={{
-            color:     '#94A3B8',
+            color:     'var(--hmi-text-muted)',
             fontSize:  '0.78rem',
             marginTop: 6,
             fontFamily:'var(--font-mono)',
@@ -174,9 +155,9 @@ export default function Login({ onLoginSuccess }) {
             margin:      '20px 0 0',
             opacity:     0.4,
           }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(124,58,237,0.30)' }} />
-            <Cpu size={12} style={{ color: '#A78BFA' }} />
-            <div style={{ flex: 1, height: 1, background: 'rgba(124,58,237,0.30)' }} />
+            <div style={{ flex: 1, height: 1, background: 'var(--hmi-bg-surface-elevated)' }} />
+            <Cpu size={12} style={{ color: 'var(--hmi-text-muted)' }} />
+            <div style={{ flex: 1, height: 1, background: 'var(--hmi-bg-surface-elevated)' }} />
           </div>
         </div>
 
@@ -196,7 +177,7 @@ export default function Login({ onLoginSuccess }) {
               display:       'flex', alignItems: 'center', gap: 6,
               fontSize:      '0.7rem', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.7px',
-              color:         'rgba(124,58,237,0.7)',
+              color:         'var(--hmi-text-muted)',
               fontFamily:    'var(--font-mono)',
             }}>
               <User size={12} /> DNI del Operario
@@ -211,23 +192,23 @@ export default function Login({ onLoginSuccess }) {
               disabled={loading}
               autoComplete="username"
               style={{
-                background:   '#1A1625',
-                border:       '1px solid rgba(124,58,237,0.25)',
-                borderRadius: 10,
-                color:        '#EDE9F8',
+                background:   'var(--hmi-bg-surface)',
+                border:       '1px solid var(--hmi-bg-surface-elevated)',
+                borderRadius: 4,
+                color:        'var(--hmi-text-main)',
                 padding:      '13px 16px',
                 fontSize:     '1rem',
                 fontFamily:   'var(--font-mono)',
                 letterSpacing:'0.5px',
                 outline:      'none',
-                transition:   'border-color 0.2s ease, box-shadow 0.2s ease',
+                transition:   'border-color 0.2s ease',
               }}
               onFocus={e => {
-                e.currentTarget.style.borderColor = 'rgba(124,58,237,0.65)';
-                e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(124,58,237,0.20)';
+                e.currentTarget.style.borderColor = 'var(--hmi-accent)';
+                e.currentTarget.style.boxShadow   = 'none';
               }}
               onBlur={e => {
-                e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)';
+                e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
                 e.currentTarget.style.boxShadow   = 'none';
               }}
             />
@@ -239,7 +220,7 @@ export default function Login({ onLoginSuccess }) {
               display:       'flex', alignItems: 'center', gap: 6,
               fontSize:      '0.7rem', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '0.7px',
-              color:         'rgba(124,58,237,0.7)',
+              color:         'var(--hmi-text-muted)',
               fontFamily:    'var(--font-mono)',
             }}>
               <Lock size={12} /> Contraseña
@@ -254,22 +235,22 @@ export default function Login({ onLoginSuccess }) {
               disabled={loading}
               autoComplete="current-password"
               style={{
-                background:   '#1A1625',
-                border:       '1px solid rgba(124,58,237,0.25)',
-                borderRadius: 10,
-                color:        '#EDE9F8',
+                background:   'var(--hmi-bg-surface)',
+                border:       '1px solid var(--hmi-bg-surface-elevated)',
+                borderRadius: 4,
+                color:        'var(--hmi-text-main)',
                 padding:      '13px 16px',
                 fontSize:     '1rem',
                 fontFamily:   'var(--font-ui)',
                 outline:      'none',
-                transition:   'border-color 0.2s ease, box-shadow 0.2s ease',
+                transition:   'border-color 0.2s ease',
               }}
               onFocus={e => {
-                e.currentTarget.style.borderColor = 'rgba(124,58,237,0.65)';
-                e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(124,58,237,0.20)';
+                e.currentTarget.style.borderColor = 'var(--hmi-accent)';
+                e.currentTarget.style.boxShadow   = 'none';
               }}
               onBlur={e => {
-                e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)';
+                e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
                 e.currentTarget.style.boxShadow   = 'none';
               }}
             />
@@ -291,14 +272,14 @@ export default function Login({ onLoginSuccess }) {
               fontFamily:   'var(--font-ui)',
               letterSpacing:'0.5px',
               textTransform:'uppercase',
-              color:        '#FFFFFF',
+              color:        '#1A2E39', // Alto contraste
               background:   loading
-                ? 'rgba(124,58,237,0.35)'
-                : 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
-              border:       '1px solid rgba(124,58,237,0.50)',
-              borderRadius: 12,
+                ? 'var(--hmi-accent-disabled)'
+                : 'var(--hmi-accent)',
+              border:       '1px solid var(--hmi-bg-surface-elevated)',
+              borderRadius: 4,
               cursor:       loading ? 'not-allowed' : 'pointer',
-              boxShadow:    '0 0 24px rgba(124,58,237,0.35), 0 4px 16px rgba(124,58,237,0.25)',
+              boxShadow:    'none',
               transition:   'all 0.22s cubic-bezier(0.4,0,0.2,1)',
               display:      'flex',
               alignItems:   'center',
@@ -326,9 +307,10 @@ export default function Login({ onLoginSuccess }) {
           marginTop:  28,
           textAlign:  'center',
           fontSize:   '0.65rem',
-          color:      'rgba(124,58,237,0.35)',
+          color:      'var(--hmi-text-muted)',
           fontFamily: 'var(--font-mono)',
           letterSpacing: '0.5px',
+          opacity:    0.4,
         }}>
           MECA-PRO MES v1.0 · PRODUCCIÓN CNC · ACCESO RESTRINGIDO
         </div>

@@ -4,6 +4,8 @@ import AlertaBanner from '../components/AlertaBanner';
 import StatusBadge from '../components/StatusBadge';
 import { Timer, ShieldCheck, Wrench, ClipboardList } from 'lucide-react';
 import { useUiStore } from '../store/useUiStore';
+import { motion } from 'framer-motion';
+import { HMI_FADE_IN } from '../constants/theme';
 
 export default function Dashboard() {
   const {
@@ -79,57 +81,91 @@ export default function Dashboard() {
   );
 
   return (
-    <div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 24 }}>
       {/* Stats */}
-      <div className="grid-4" style={{ marginBottom: 24 }}>
-        <div className="stat-card">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 24, gridColumn: 'span 12' }}>
+        <motion.div
+          className="stat-card"
+          {...HMI_FADE_IN}
+          style={{
+            gridColumn: 'span 3',
+            borderTop: '1px solid var(--hmi-bg-surface-elevated)',
+          }}
+        >
           <span className="stat-label">HPs Activas</span>
-          <span className="stat-value text-blue">{hpsActivas.length}</span>
+          <span className="stat-value" style={{ color: 'var(--hmi-text-main)', fontWeight: 'bold', fontSize: '2.25rem' }}>{hpsActivas.length}</span>
           <span className="stat-sub">En proceso + pendientes</span>
-        </div>
-        <div className="stat-card">
+        </motion.div>
+        <motion.div
+          className="stat-card"
+          {...HMI_FADE_IN}
+          style={{
+            gridColumn: 'span 3',
+            borderTop: '2px solid var(--hmi-accent)',
+          }}
+        >
           <span className="stat-label">Operario Activo</span>
-          <span className="stat-value text-green" style={{ fontSize: '1.1rem' }}>
-            {operarioNombre || 'Invitado'}
-          </span>
-          <div className="flex items-center gap-4 mt-4" style={{ gap: 8, justifyContent: 'space-between' }}>
-            <span className="stat-sub" style={{ fontFamily: 'var(--font-mono)' }}>DNI: {dniOperario || 'N/A'}</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <span className="stat-value" style={{ fontSize: '1.25rem', fontFamily: 'var(--font-ui)', fontWeight: 'bold', color: 'var(--hmi-text-main)' }}>
+              {operarioNombre || 'Invitado'}
+            </span>
             <div className="pulse-dot"></div>
           </div>
-        </div>
-        <div className="stat-card">
+          <span className="stat-sub" style={{ fontFamily: 'var(--font-ui)', marginTop: 8 }}>
+            DNI: {dniOperario || 'N/A'}
+          </span>
+        </motion.div>
+        <motion.div
+          className="stat-card"
+          {...HMI_FADE_IN}
+          style={{
+            gridColumn: 'span 3',
+            borderTop: '2px solid var(--hmi-accent)',
+          }}
+        >
           <span className="stat-label">Stock Bajo</span>
-          <span className="stat-value" style={{ color: stockBajo.length > 0 ? 'var(--red)' : 'var(--green)' }}>
+          <span className="stat-value" style={{ color: 'var(--hmi-text-main)', fontWeight: 'bold', fontSize: '2.25rem' }}>
             {stockBajo.length}
           </span>
           <span className="stat-sub">{stockBajo.length > 0 ? 'Requiere atención' : 'Todo OK'}</span>
-        </div>
-        <div className="stat-card">
+        </motion.div>
+        <motion.div
+          className="stat-card"
+          {...HMI_FADE_IN}
+          style={{
+            gridColumn: 'span 3',
+            borderTop: '1px solid var(--hmi-bg-surface-elevated)',
+          }}
+        >
           <span className="stat-label">Refrigerio</span>
-          <span className="stat-value" style={{ color: actividadActiva ? 'var(--yellow)' : 'var(--text-muted)' }}>
+          <span className="stat-value" style={{ color: 'var(--hmi-text-main)', fontWeight: 'bold', fontSize: '2.25rem' }}>
             {actividadActiva ? 'ACTIVO' : 'LIBRE'}
           </span>
           <span className="stat-sub">Estado actual</span>
-        </div>
+        </motion.div>
       </div>
 
       {alerta && (
-        <AlertaBanner
-          tipo={alerta.tipo}
-          mensaje={alerta.mensaje}
-          onClose={() => setAlerta(null)}
-        />
+        <div style={{ gridColumn: 'span 12' }}>
+          <AlertaBanner
+            tipo={alerta.tipo}
+            mensaje={alerta.mensaje}
+            onClose={() => setAlerta(null)}
+          />
+        </div>
       )}
 
       {stockBajo.length > 0 && (
-        <AlertaBanner
-          tipo="warning"
-          mensaje={`⚠️ ${stockBajo.length} recurso(s) con stock bajo: ${stockBajo.map(r => r.nombreEspecifico).join(', ')}`}
-        />
+        <div style={{ gridColumn: 'span 12' }}>
+          <AlertaBanner
+            tipo="warning"
+            mensaje={`⚠️ ${stockBajo.length} recurso(s) con stock bajo: ${stockBajo.map(r => r.nombreEspecifico).join(', ')}`}
+          />
+        </div>
       )}
 
       {/* Botones de Acción Rápida — Layout Asimétrico Midnight Amethyst */}
-      <div className="card" style={{ marginBottom: 24 }}>
+      <div className="card" style={{ gridColumn: 'span 12' }}>
         <div className="card-header">
           <span className="card-title">⚡ Acciones Rápidas</span>
           {actividadActiva && (
@@ -160,35 +196,36 @@ export default function Dashboard() {
             disabled={procesandoRefrigerio}
             style={{
               flex: actividadActiva ? '0 0 65%' : '1',
-              minHeight: 110,
+              minHeight: 80,
               border: actividadActiva
-                ? '2px solid rgba(239, 68, 68, 0.6)'
-                : '2px solid rgba(37, 99, 235, 0.45)',
-              borderRadius: 'var(--radius-lg)',
+                ? '1px solid #EF4444'
+                : '1px solid var(--hmi-bg-surface-elevated)',
+              borderRadius: 4,
               cursor: 'pointer',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 10,
+              gap: 8,
               fontFamily: 'var(--font-ui)',
-              fontSize: '1.15rem',
+              fontSize: '1rem',
               fontWeight: 900,
               textTransform: 'uppercase',
               letterSpacing: '0.75px',
               color: '#FFFFFF',
-              background: actividadActiva
-                ? 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)'
-                : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-              boxShadow: actividadActiva
-                ? '0 0 30px rgba(239, 68, 68, 0.50), 0 8px 32px rgba(239, 68, 68, 0.30)'
-                : '0 0 15px rgba(37, 99, 235, 0.25), 0 8px 24px rgba(37, 99, 235, 0.20)',
+              background: actividadActiva ? '#EF4444' : 'var(--hmi-bg-surface-elevated)',
               transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
               position: 'relative',
               overflow: 'hidden'
             }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = 'var(--hmi-accent)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = actividadActiva ? '#EF4444' : 'var(--hmi-bg-surface-elevated)';
+            }}
           >
-            <Timer size={actividadActiva ? 40 : 36} />
+            <Timer size={24} />
             {procesandoRefrigerio ? 'Procesando...' : actividadActiva ? 'TERMINAR REFRIGERIO' : 'INICIAR REFRIGERIO'}
           </button>
 
@@ -200,9 +237,9 @@ export default function Dashboard() {
                 style={{
                   width: '100%',
                   height: '100%',
-                  minHeight: actividadActiva ? 49 : 110,
-                  border: '2px solid rgba(16, 185, 129, 0.2)',
-                  borderRadius: 'var(--radius-lg)',
+                  minHeight: actividadActiva ? 36 : 80,
+                  border: '1px solid var(--hmi-bg-surface-elevated)',
+                  borderRadius: 4,
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: actividadActiva ? 'row' : 'column',
@@ -210,28 +247,26 @@ export default function Dashboard() {
                   justifyContent: 'center',
                   gap: 8,
                   fontFamily: 'var(--font-ui)',
-                  fontSize: actividadActiva ? '0.85rem' : '1rem',
+                  fontSize: actividadActiva ? '0.85rem' : '0.95rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  color: 'var(--text-secondary)',
-                  background: '#1A1625',
+                  color: '#FFFFFF',
+                  background: 'var(--hmi-bg-surface-elevated)',
                   transition: 'all 0.25s ease'
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #10B981, #047857)';
-                  e.currentTarget.style.color = '#FFFFFF';
-                  e.currentTarget.style.borderColor = 'rgba(16,185,129,0.6)';
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(16,185,129,0.35)';
+                  e.currentTarget.style.background = 'var(--hmi-accent)';
+                  e.currentTarget.style.color = '#1A2E39';
+                  e.currentTarget.style.borderColor = 'var(--hmi-accent)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = '#1A1625';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                  e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = 'var(--hmi-bg-surface-elevated)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                  e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
                 }}
               >
-                <ShieldCheck size={actividadActiva ? 18 : 32} />
+                <ShieldCheck size={20} />
                 SOLICITAR EPP
               </button>
             </a>
@@ -242,9 +277,9 @@ export default function Dashboard() {
                 style={{
                   width: '100%',
                   height: '100%',
-                  minHeight: actividadActiva ? 49 : 110,
-                  border: '2px solid rgba(124, 58, 237, 0.2)',
-                  borderRadius: 'var(--radius-lg)',
+                  minHeight: actividadActiva ? 36 : 80,
+                  border: '1px solid var(--hmi-bg-surface-elevated)',
+                  borderRadius: 4,
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: actividadActiva ? 'row' : 'column',
@@ -252,28 +287,26 @@ export default function Dashboard() {
                   justifyContent: 'center',
                   gap: 8,
                   fontFamily: 'var(--font-ui)',
-                  fontSize: actividadActiva ? '0.85rem' : '1rem',
+                  fontSize: actividadActiva ? '0.85rem' : '0.95rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  color: 'var(--text-secondary)',
-                  background: '#1A1625',
+                  color: '#FFFFFF',
+                  background: 'var(--hmi-bg-surface-elevated)',
                   transition: 'all 0.25s ease'
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #7C3AED, #5B21B6)';
-                  e.currentTarget.style.color = '#FFFFFF';
-                  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)';
-                  e.currentTarget.style.boxShadow = '0 0 20px rgba(124,58,237,0.35)';
+                  e.currentTarget.style.background = 'var(--hmi-accent)';
+                  e.currentTarget.style.color = '#1A2E39';
+                  e.currentTarget.style.borderColor = 'var(--hmi-accent)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = '#1A1625';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                  e.currentTarget.style.borderColor = 'rgba(124, 58, 237, 0.2)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = 'var(--hmi-bg-surface-elevated)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                  e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
                 }}
               >
-                <Wrench size={actividadActiva ? 18 : 32} />
+                <Wrench size={20} />
                 SOLICITAR HERRAMIENTA
               </button>
             </a>
@@ -282,7 +315,7 @@ export default function Dashboard() {
       </div>
 
       {/* HPs Activas */}
-      <div className="card">
+      <div className="card" style={{ gridColumn: 'span 12' }}>
         <div className="card-header">
           <span className="card-title"><ClipboardList size={18} /> HPs en Producción</span>
           <button onClick={cargarDatos} className="btn btn-outline">↻ Actualizar</button>
@@ -311,10 +344,59 @@ export default function Dashboard() {
                     <td className="font-bold">{hp.pieza || '—'}</td>
                     <td style={{ color: 'var(--text-secondary)' }}>{hp.material || '—'}</td>
                     <td>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>
-                        ✅ {hp.cantidadBuenas}/{hp.cantidadTotal}
-                        {hp.cantidadMalas > 0 && <span style={{ color: 'var(--red)' }}> ❌{hp.cantidadMalas}</span>}
-                      </span>
+                      {(() => {
+                        const actual = hp.cantidadBuenas || 0;
+                        const total = hp.cantidadTotal || 0;
+                        const porcentaje = total > 0 ? Math.min((actual / total) * 100, 100) : 0;
+                        return (
+                          <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 6,
+                            justifyContent: 'center',
+                            width: '100%',
+                            maxWidth: 140,
+                          }}>
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              fontFamily: 'var(--font-ui)',
+                              fontSize: '0.78rem',
+                              fontWeight: 500,
+                              color: 'var(--hmi-text-muted)',
+                            }}>
+                              <span>{actual}/{total}</span>
+                              <span>{Math.round(porcentaje)}%</span>
+                            </div>
+                            <div style={{
+                              width: '100%',
+                              height: 6,
+                              borderRadius: 2,
+                              background: 'var(--hmi-bg-surface-elevated)',
+                              overflow: 'hidden',
+                            }}>
+                              <div style={{
+                                width: `${porcentaje}%`,
+                                height: '100%',
+                                background: porcentaje === 100 ? '#10B981' : (porcentaje > 0 ? 'var(--hmi-accent)' : '#4A6080'),
+                                transition: 'width 0.3s ease, background-color 0.3s ease',
+                              }} />
+                            </div>
+                            {hp.cantidadMalas > 0 && (
+                              <div style={{
+                                fontFamily: 'var(--font-ui)',
+                                fontSize: '0.72rem',
+                                color: 'var(--red)',
+                                marginTop: 1,
+                                textAlign: 'left',
+                              }}>
+                                Rechazadas: {hp.cantidadMalas}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td><StatusBadge estado={hp.estado} /></td>
                     <td style={{ color: 'var(--text-secondary)' }}>{hp.nombreResponsable || '—'}</td>

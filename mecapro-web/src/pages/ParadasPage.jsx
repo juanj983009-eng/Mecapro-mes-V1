@@ -1,44 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { paradasApi, hpsApi } from '../api';
+import { paradasApi, hpsApi, maquinasApi } from '../api';
 import AlertaBanner from '../components/AlertaBanner';
-import { Zap, Play, Square, FileText, Wrench, Disc3, Settings2, X, Download, Clock } from 'lucide-react';
+import { Zap, Play, Square, FileText, Wrench, Disc3, Settings2, X, Download, Clock, Box, Hammer, Monitor, HelpCircle } from 'lucide-react';
 import { useUiStore } from '../store/useUiStore';
 
 const CAUSAS = [
-  { value: 'FALLA_MECANICA',     label: '🔧 Falla Mecánica' },
-  { value: 'FALLA_ELECTRICA',    label: '⚡ Falla Eléctrica' },
-  { value: 'FALTA_MATERIAL',     label: '📦 Falta de Material' },
-  { value: 'CAMBIO_HERRAMIENTA', label: '🔩 Cambio de Herramienta' },
-  { value: 'PROGRAMACION',       label: '💻 Programación CNC' },
-  { value: 'OTRO',               label: '❓ Otro' },
+  { value: 'FALLA_MECANICA',     label: 'Falla Mecánica',       Icon: Wrench },
+  { value: 'FALLA_ELECTRICA',    label: 'Falla Eléctrica',      Icon: Zap },
+  { value: 'FALTA_MATERIAL',     label: 'Falta de Material',    Icon: Box },
+  { value: 'CAMBIO_HERRAMIENTA', label: 'Cambio de Herramienta', Icon: Hammer },
+  { value: 'PROGRAMACION',       label: 'Programación CNC',     Icon: Monitor },
+  { value: 'OTRO',               label: 'Otro',                 Icon: HelpCircle },
 ];
 
 /* Máquinas con iconos Lucide en lugar de emojis planos */
 const MAQUINAS_PREDEFINIDAS = [
-  { name: 'Mandrinadora 3', Icon: Wrench,   iconColor: '#A78BFA' },
-  { name: 'Torno CNC 1',   Icon: Disc3,    iconColor: '#818CF8' },
-  { name: 'Fresa CNC 2',   Icon: Settings2, iconColor: '#C4B5FD' },
+  { name: 'Mandrinadora 3', Icon: Wrench,   iconColor: 'var(--hmi-text-muted)' },
+  { name: 'Torno CNC 1',   Icon: Disc3,    iconColor: 'var(--hmi-text-muted)' },
+  { name: 'Fresa CNC 2',   Icon: Settings2, iconColor: 'var(--hmi-text-muted)' },
 ];
 
 /* ─────────────────────────────────────────────────────────────────
-   Paleta de estilos reutilizable  — Midnight Amethyst
+   Paleta de estilos reutilizable  — HMI Charcoal & Pumpkin (Flat)
 ───────────────────────────────────────────────────────────────── */
 const S = {
-  /* Paso activo — violeta neón */
+  /* Paso activo — Pumpkin sólido */
   stepActive: {
     flex: 1,
     height: 5,
     borderRadius: 3,
-    background: 'var(--accent-purple)',            /* #7C3AED */
-    boxShadow: '0 0 12px rgba(124, 58, 237, 0.50)',
+    background: 'var(--hmi-accent)',
+    boxShadow: 'none',
     transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
   },
-  /* Paso pendiente — morado oscuro opaco */
+  /* Paso pendiente — Charcoal elevado */
   stepInactive: {
     flex: 1,
     height: 5,
     borderRadius: 3,
-    background: '#2E224D',
+    background: 'var(--hmi-bg-surface-elevated)',
     transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
   },
 
@@ -47,9 +47,9 @@ const S = {
     cursor: 'pointer',
     textAlign: 'center',
     padding: '28px 20px',
-    background: 'var(--bg-card)',                  /* #120E1E */
-    border: '1px solid rgba(124, 58, 237, 0.15)',
-    borderRadius: '14px',
+    background: 'var(--hmi-bg-surface)',
+    border: '1px solid var(--hmi-bg-surface-elevated)',
+    borderRadius: 4,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -60,38 +60,53 @@ const S = {
   },
   /* Tarjeta de máquina — seleccionada */
   maquinaCardSelected: {
-    background: 'rgba(124,58,237,0.12)',
-    border: '2px solid rgba(124, 58, 237, 0.70)',
-    boxShadow: '0 0 24px rgba(124,58,237,0.30), inset 0 1px 0 rgba(124,58,237,0.15)',
+    background: 'var(--hmi-bg-surface-elevated)',
+    border: '1px solid var(--hmi-accent)',
+    boxShadow: 'none',
   },
 
   /* Ícono de máquina envuelto */
   iconWrap: {
     width: 56,
     height: 56,
-    borderRadius: 14,
-    background: 'rgba(124,58,237,0.10)',
-    border: '1px solid rgba(124,58,237,0.25)',
+    borderRadius: 4,
+    background: 'transparent',
+    border: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  /* Input manual — fondo oscuro integrado */
+  /* Input manual — fondo Charcoal */
   inputManual: {
     flex: 1,
-    background: '#1A1625',
-    border: '1px solid rgba(124,58,237,0.22)',
-    borderRadius: 10,
-    color: '#EDE9F8',
+    background: 'var(--hmi-bg-surface)',
+    border: '1px solid var(--hmi-bg-surface-elevated)',
+    borderRadius: 4,
+    color: 'var(--hmi-text-main)',
     padding: '12px 16px',
     fontSize: '0.95rem',
     fontFamily: 'var(--font-ui)',
     outline: 'none',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    transition: 'border-color 0.2s ease',
   },
 
-  /* Btn Continuar — violeta oscuro, gradiente en hover */
+  /* Dropdown selector de máquinas — HMI Flat */
+  selectMaquina: {
+    flex: 1,
+    background: 'var(--hmi-bg-surface)',
+    border: '1px solid var(--hmi-bg-surface-elevated)',
+    borderRadius: 4,
+    color: 'var(--hmi-text-main)',
+    padding: '12px 16px',
+    fontSize: '0.95rem',
+    fontFamily: 'var(--font-ui)',
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
+    cursor: 'pointer',
+  },
+
+  /* Btn Continuar — Pumpkin plano */
   btnContinuar: {
     minHeight: 48,
     padding: '0 24px',
@@ -99,10 +114,10 @@ const S = {
     fontWeight: 700,
     fontFamily: 'var(--font-ui)',
     letterSpacing: '0.3px',
-    color: '#C4B5FD',                              /* lavanda */
-    background: '#311C5B',
-    border: '1px solid rgba(124,58,237,0.35)',
-    borderRadius: 10,
+    color: '#000000',
+    background: 'var(--hmi-accent)',
+    border: '1px solid var(--hmi-accent)',
+    borderRadius: 4,
     cursor: 'pointer',
     transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
     whiteSpace: 'nowrap',
@@ -111,8 +126,8 @@ const S = {
   /* Botones de causa — Paso 2 */
   btnCausaBase: {
     minHeight: 110,
-    border: '2px solid rgba(124,58,237,0.15)',
-    borderRadius: 12,
+    border: '1px solid var(--hmi-bg-surface-elevated)',
+    borderRadius: 4,
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
@@ -124,122 +139,105 @@ const S = {
     fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
-    color: '#C4B5FD',
-    background: '#1A1625',
+    color: 'var(--hmi-text-muted)',
+    background: 'var(--hmi-bg-surface)',
     transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
   },
   btnCausaSelected: {
-    border: '2px solid rgba(124,58,237,0.75)',
-    background: 'rgba(124,58,237,0.14)',
-    boxShadow: '0 0 16px rgba(124,58,237,0.25)',
-    color: '#EDE9F8',
+    border: '1px solid var(--hmi-accent)',
+    background: 'var(--hmi-bg-surface-elevated)',
+    boxShadow: 'none',
+    color: 'var(--hmi-accent)',
   },
 
   /* Tarjeta resumen paso 3 */
   resumenCard: {
-    background: 'rgba(124,58,237,0.06)',
-    border: '1px solid rgba(124,58,237,0.18)',
-    borderRadius: 12,
+    background: 'var(--hmi-bg-surface)',
+    border: '1px solid var(--hmi-bg-surface-elevated)',
+    borderRadius: 4,
     padding: '18px 20px',
     marginBottom: 20,
   },
 
   /* Panel inferior RRHH */
   rrhhPanel: {
-    background: 'var(--bg-card)',                  /* #120E1E */
-    border: '1px solid rgba(124,58,237,0.12)',
-    borderRadius: 14,
+    background: 'var(--hmi-bg-surface)',
+    border: '1px solid var(--hmi-bg-surface-elevated)',
+    borderRadius: 4,
     overflow: 'hidden',
   },
 
-  /* Badges refinados */
+  /* Badges refinados — sin bordes, fondos translúcidos */
   badgeIndigo: {
     display: 'inline-flex',
     alignItems: 'center',
     padding: '4px 11px',
-    borderRadius: 9999,
+    borderRadius: 4,
     fontSize: '0.72rem',
     fontWeight: 700,
     letterSpacing: '0.4px',
-    background: 'rgba(99,102,241,0.15)',
-    color: '#A5B4FC',
+    background: 'var(--hmi-bg-surface-elevated)',
+    color: 'var(--hmi-text-muted)',
     border: 'none',
   },
   badgeEmerald: {
     display: 'inline-flex',
     alignItems: 'center',
     padding: '4px 11px',
-    borderRadius: 9999,
+    borderRadius: 4,
     fontSize: '0.72rem',
     fontWeight: 700,
     letterSpacing: '0.4px',
-    background: 'rgba(16,185,129,0.13)',
-    color: '#6EE7B7',
+    background: 'var(--hmi-bg-surface-elevated)',
+    color: 'var(--hmi-text-muted)',
     border: 'none',
   },
   badgeAmber: {
     display: 'inline-flex',
     alignItems: 'center',
     padding: '4px 11px',
-    borderRadius: 9999,
+    borderRadius: 4,
     fontSize: '0.72rem',
     fontWeight: 700,
     letterSpacing: '0.4px',
-    background: 'rgba(245,158,11,0.13)',
-    color: '#FCD34D',
+    background: 'var(--hmi-bg-surface-elevated)',
+    color: 'var(--hmi-text-muted)',
     border: 'none',
   },
 };
 
 /* ─── Hover handlers para Btn Continuar ─── */
 const handleContinuarEnter = (e) => {
-  e.currentTarget.style.background  = 'linear-gradient(135deg, #7C3AED, #5B21B6)';
-  e.currentTarget.style.color       = '#FFFFFF';
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.6)';
-  e.currentTarget.style.boxShadow   = '0 0 18px rgba(124,58,237,0.35)';
+  e.currentTarget.style.filter      = 'brightness(1.1)';
 };
 const handleContinuarLeave = (e) => {
-  e.currentTarget.style.background  = '#311C5B';
-  e.currentTarget.style.color       = '#C4B5FD';
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.35)';
-  e.currentTarget.style.boxShadow   = 'none';
+  e.currentTarget.style.filter      = 'none';
 };
 
 /* ─── Hover handlers para tarjetas de máquina ─── */
 const handleMaquinaEnter = (e, isSelected) => {
   if (isSelected) return;
-  e.currentTarget.style.border     = '1px solid rgba(124,58,237,0.45)';
-  e.currentTarget.style.boxShadow  = '0 0 20px rgba(124,58,237,0.18)';
-  e.currentTarget.style.background = 'rgba(124,58,237,0.06)';
+  e.currentTarget.style.border     = '1px solid var(--hmi-accent)';
+  e.currentTarget.style.background = 'var(--hmi-bg-surface-elevated)';
 };
 const handleMaquinaLeave = (e, isSelected) => {
   if (isSelected) return;
-  e.currentTarget.style.border     = '1px solid rgba(124, 58, 237, 0.15)';
-  e.currentTarget.style.boxShadow  = 'none';
-  e.currentTarget.style.background = 'var(--bg-card)';
+  e.currentTarget.style.border     = '1px solid var(--hmi-bg-surface-elevated)';
+  e.currentTarget.style.background = 'var(--hmi-bg-surface)';
 };
 
 /* ─── Hover handlers para botones de causa ─── */
 const handleCausaEnter = (e, isSelected) => {
   if (isSelected) return;
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.45)';
-  e.currentTarget.style.background  = 'rgba(124,58,237,0.08)';
+  e.currentTarget.style.borderColor = 'var(--hmi-accent)';
+  e.currentTarget.style.background  = 'var(--hmi-bg-surface-elevated)';
 };
 const handleCausaLeave = (e, isSelected) => {
   if (isSelected) return;
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.15)';
-  e.currentTarget.style.background  = '#1A1625';
+  e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
+  e.currentTarget.style.background  = 'var(--hmi-bg-surface)';
 };
 
-/* ─── Focus handler para input manual ─── */
-const handleInputFocus = (e) => {
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.65)';
-  e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(124,58,237,0.20)';
-};
-const handleInputBlur = (e) => {
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.22)';
-  e.currentTarget.style.boxShadow   = 'none';
-};
 
 /* ═════════════════════════════════════════════════════
    Modal — Descripción al finalizar parada
@@ -256,20 +254,20 @@ function ModalDescripcion({ onConfirm, onCancel }) {
       background: 'rgba(8,6,13,0.72)',
     }}>
       <div style={{
-        background: '#120E1E',
-        border: '1px solid rgba(124,58,237,0.35)',
-        borderRadius: 16,
+        background: 'var(--hmi-bg-surface)',
+        border: '1px solid var(--hmi-bg-surface-elevated)',
+        borderRadius: 4,
         padding: '32px 28px',
         maxWidth: 440, width: '90%',
-        boxShadow: '0 0 60px rgba(124,58,237,0.20), 0 24px 80px rgba(0,0,0,0.70)',
+        boxShadow: 'none',
         position: 'relative',
       }}>
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.60), transparent)' }} />
-        <h3 style={{ margin: '0 0 8px', color: '#EDE9F8', fontWeight: 700 }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+          background: 'var(--hmi-accent)' }} />
+        <h3 style={{ margin: '0 0 8px', color: 'var(--hmi-text-main)', fontWeight: 700 }}>
           ¿Detalle adicional?
         </h3>
-        <p style={{ margin: '0 0 16px', color: '#94A3B8', fontSize: '0.85rem' }}>
+        <p style={{ margin: '0 0 16px', color: 'var(--hmi-text-muted)', fontSize: '0.85rem' }}>
           (Opcional) Agrega un comentario antes de cerrar la parada técnica.
         </p>
         <textarea
@@ -279,9 +277,9 @@ function ModalDescripcion({ onConfirm, onCancel }) {
           onChange={e => setDesc(e.target.value)}
           style={{
             width: '100%', boxSizing: 'border-box',
-            background: '#1A1625',
-            border: '1px solid rgba(124,58,237,0.25)',
-            borderRadius: 10, color: '#EDE9F8',
+            background: 'var(--hmi-bg-surface)',
+            border: '1px solid var(--hmi-bg-surface-elevated)',
+            borderRadius: 4, color: 'var(--hmi-text-main)',
             padding: '10px 14px', fontSize: '0.9rem',
             fontFamily: 'var(--font-ui)', resize: 'vertical',
             outline: 'none',
@@ -290,16 +288,16 @@ function ModalDescripcion({ onConfirm, onCancel }) {
         <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
           <button onClick={onCancel} style={{
             padding: '8px 20px', background: 'transparent',
-            border: '1px solid rgba(124,58,237,0.25)', borderRadius: 9,
-            color: '#94A3B8', cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'var(--font-ui)',
+            border: '1px solid var(--hmi-bg-surface-elevated)', borderRadius: 4,
+            color: 'var(--hmi-text-muted)', cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'var(--font-ui)',
           }}>Cancelar</button>
           <button onClick={() => onConfirm(desc)} style={{
             padding: '8px 24px',
-            background: 'linear-gradient(135deg, #7C3AED, #5B21B6)',
-            border: '1px solid rgba(124,58,237,0.50)', borderRadius: 9,
-            color: '#FFFFFF', cursor: 'pointer', fontWeight: 700,
+            background: 'var(--hmi-accent)',
+            border: '1px solid var(--hmi-accent)', borderRadius: 4,
+            color: '#000000', cursor: 'pointer', fontWeight: 700,
             fontSize: '0.85rem', fontFamily: 'var(--font-ui)',
-            boxShadow: '0 0 16px rgba(124,58,237,0.30)',
+            boxShadow: 'none',
           }}>Finalizar Parada</button>
         </div>
       </div>
@@ -335,38 +333,38 @@ function JustificacionModal({ texto, parada, onClose }) {
       padding: 16,
     }}>
       <div style={{
-        background: '#120E1E',
-        border: '1px solid rgba(124,58,237,0.35)',
-        borderRadius: 18,
+        background: 'var(--hmi-bg-surface)',
+        border: '1px solid var(--hmi-bg-surface-elevated)',
+        borderRadius: 4,
         padding: '28px 28px 24px',
         maxWidth: 560, width: '100%',
-        boxShadow: '0 0 80px rgba(124,58,237,0.25), 0 32px 100px rgba(0,0,0,0.75)',
+        boxShadow: 'none',
         position: 'relative',
         maxHeight: '90vh',
         overflowY: 'auto',
       }}>
         {/* Línea superior */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.70), transparent)' }} />
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+          background: 'var(--hmi-accent)' }} />
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
           <div>
             <div style={{
               fontSize: '0.62rem', fontFamily: 'var(--font-mono)',
-              color: 'rgba(124,58,237,0.65)', letterSpacing: '1px',
+              color: 'var(--hmi-text-muted)', letterSpacing: '1px',
               textTransform: 'uppercase', marginBottom: 5,
             }}>DOCUMENTO GENERADO — JUSTIFICACIÓN RRHH</div>
-            <h3 style={{ margin: 0, color: '#EDE9F8', fontWeight: 800, fontSize: '1.05rem' }}>
+            <h3 style={{ margin: 0, color: 'var(--hmi-text-main)', fontWeight: 800, fontSize: '1.05rem' }}>
               Reporte de Parada Técnica
             </h3>
           </div>
           <button onClick={onClose} style={{
-            background: 'rgba(124,58,237,0.10)',
-            border: '1px solid rgba(124,58,237,0.22)',
-            borderRadius: 8, width: 32, height: 32,
+            background: 'var(--hmi-bg-surface-elevated)',
+            border: '1px solid var(--hmi-bg-surface-elevated)',
+            borderRadius: 4, width: 32, height: 32,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: '#94A3B8',
+            cursor: 'pointer', color: 'var(--hmi-text-muted)',
             flexShrink: 0,
           }}>
             <X size={14} />
@@ -376,9 +374,9 @@ function JustificacionModal({ texto, parada, onClose }) {
         {/* Resumen rápido */}
         {parada && (
           <div style={{
-            background: 'rgba(124,58,237,0.06)',
-            border: '1px solid rgba(124,58,237,0.14)',
-            borderRadius: 10, padding: '12px 16px', marginBottom: 16,
+            background: 'var(--hmi-bg-surface-elevated)',
+            border: '1px solid var(--hmi-bg-surface-elevated)',
+            borderRadius: 4, padding: '12px 16px', marginBottom: 16,
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px',
           }}>
             {[
@@ -388,8 +386,8 @@ function JustificacionModal({ texto, parada, onClose }) {
               { label: 'Parada',   value: `#${parada.idParada}` },
             ].map(({ label, value }) => (
               <div key={label}>
-                <div style={{ fontSize: '0.62rem', color: 'rgba(124,58,237,0.55)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', color: '#C4B5FD', fontWeight: 600, fontSize: '0.83rem' }}>{value}</div>
+                <div style={{ fontSize: '0.62rem', color: 'var(--hmi-text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--hmi-accent)', fontWeight: 600, fontSize: '0.83rem' }}>{value}</div>
               </div>
             ))}
           </div>
@@ -397,15 +395,15 @@ function JustificacionModal({ texto, parada, onClose }) {
 
         {/* Bloque de texto formateado */}
         <div style={{
-          background: '#1A1625',
-          border: '1px solid rgba(124,58,237,0.18)',
-          borderRadius: 10, padding: '16px 18px',
+          background: 'var(--hmi-bg-surface-elevated)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: 4, padding: '16px 18px',
           marginBottom: 20,
         }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
             fontSize: '0.62rem', fontFamily: 'var(--font-mono)',
-            color: 'rgba(124,58,237,0.55)', textTransform: 'uppercase',
+            color: 'var(--hmi-text-muted)', textTransform: 'uppercase',
             letterSpacing: '0.8px', marginBottom: 10,
           }}>
             <Clock size={10} /> CONTENIDO DE LA JUSTIFICACIÓN
@@ -414,7 +412,7 @@ function JustificacionModal({ texto, parada, onClose }) {
             margin: 0,
             fontFamily: 'var(--font-mono)',
             fontSize: '0.78rem',
-            color: '#C4B5FD',
+            color: 'var(--hmi-text-main)',
             lineHeight: 1.7,
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
@@ -428,11 +426,11 @@ function JustificacionModal({ texto, parada, onClose }) {
             style={{
               flex: 1, minHeight: 52,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              background: 'linear-gradient(135deg, #7C3AED, #5B21B6)',
-              border: '1px solid rgba(124,58,237,0.55)',
-              borderRadius: 12, color: '#FFFFFF', cursor: 'pointer',
+              background: 'var(--hmi-accent)',
+              border: '1px solid var(--hmi-accent)',
+              borderRadius: 4, color: '#000000', cursor: 'pointer',
               fontWeight: 800, fontSize: '0.9rem', fontFamily: 'var(--font-ui)',
-              boxShadow: '0 0 20px rgba(124,58,237,0.35)',
+              boxShadow: 'none',
               letterSpacing: '0.3px',
             }}
           >
@@ -441,8 +439,8 @@ function JustificacionModal({ texto, parada, onClose }) {
           <button onClick={onClose} style={{
             padding: '0 20px',
             background: 'transparent',
-            border: '1px solid rgba(124,58,237,0.18)',
-            borderRadius: 12, color: '#94A3B8', cursor: 'pointer',
+            border: '1px solid var(--hmi-bg-surface-elevated)',
+            borderRadius: 4, color: 'var(--hmi-text-muted)', cursor: 'pointer',
             fontSize: '0.85rem', fontFamily: 'var(--font-ui)',
           }}>Cerrar</button>
         </div>
@@ -459,6 +457,16 @@ export default function ParadasPage() {
   const [form, setForm]             = useState({ maquina: '', causa: '', idHp: '', descripcion: '' });
   const [cargando, setCargando]     = useState(false);
   const [pasoActual, setPasoActual] = useState(1);
+  const [maquinasCatalogo, setMaquinasCatalogo] = useState([]);
+  const [selectedMaquina, setSelectedMaquina] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHpOpen, setIsHpOpen] = useState(false);
+
+  useEffect(() => {
+    if (form.maquina && form.maquina !== selectedMaquina) {
+      setSelectedMaquina(form.maquina);
+    }
+  }, [form.maquina, selectedMaquina]);
 
   /* ── Estado del Modal de descripción al finalizar ── */
   const [showModalDesc, setShowModalDesc]                 = useState(false);
@@ -467,11 +475,15 @@ export default function ParadasPage() {
 
   const cargarDatos = async () => {
     try {
-      const [hpsRes] = await Promise.all([
+      const [hpsRes, maquinasRes] = await Promise.all([
         hpsApi.listarActivas(),
+        maquinasApi.listarTodas(),
         sincronizarPlanta()
       ]);
       setHps(hpsRes.data);
+      const list = maquinasRes.data || [];
+      const allMaquinas = list.map(m => m.nombreEspecifico);
+      setMaquinasCatalogo(allMaquinas);
     } catch {
       setAlerta({ tipo: 'error', mensaje: 'Error al cargar datos de paradas técnicas.' });
     }
@@ -539,6 +551,9 @@ export default function ParadasPage() {
     }
   };
 
+  const selectedHp = hps.find(h => String(h.idHp) === String(form.idHp));
+  const selectedHpLabel = selectedHp ? `${selectedHp.idHp} — ${selectedHp.pieza || selectedHp.descripcion}` : 'Sin HP asociada';
+
   /* ─── Render ─── */
   return (
     <div>
@@ -560,13 +575,13 @@ export default function ParadasPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <div style={{
           width: 48, height: 48,
-          background: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.10))',
-          border: '1px solid rgba(245,158,11,0.30)',
-          borderRadius: 12,
+          background: 'var(--hmi-bg-surface)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: 4,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 16px rgba(245,158,11,0.15)',
+          boxShadow: 'none',
         }}>
-          <Zap size={22} style={{ color: 'var(--accent-yellow)' }} />
+          <Zap size={22} style={{ color: 'var(--hmi-accent)' }} />
         </div>
         <div>
           <h1 className="text-2xl font-black" style={{ lineHeight: 1.15 }}>
@@ -631,11 +646,11 @@ export default function ParadasPage() {
       {!paradaActiva && (
         <div style={{
           marginBottom: 24,
-          background: 'var(--bg-card)',
-          border: '1px solid rgba(124,58,237,0.15)',
-          borderRadius: 14,
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+          background: 'var(--hmi-bg-surface)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: 4,
+          overflow: 'visible',
+          boxShadow: 'none',
         }}>
           {/* Header del stepper */}
           <div style={{
@@ -643,16 +658,16 @@ export default function ParadasPage() {
             padding: '20px 24px 0',
           }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1rem', fontWeight: 700 }}>
-              <Play size={16} style={{ color: 'var(--accent-purple)' }} />
+              <Play size={16} style={{ color: 'var(--hmi-accent)' }} />
               Registrar Nueva Parada
             </span>
             <span style={{
               fontSize: '0.72rem',
-              color: 'rgba(124,58,237,0.8)',
+              color: 'var(--hmi-text-muted)',
               fontFamily: 'var(--font-mono)',
-              background: 'rgba(124,58,237,0.10)',
-              border: '1px solid rgba(124,58,237,0.20)',
-              borderRadius: 99,
+              background: 'var(--hmi-bg-surface-elevated)',
+              border: '1px solid var(--hmi-bg-surface-elevated)',
+              borderRadius: 4,
               padding: '3px 10px',
             }}>
               PASO {pasoActual} / 3
@@ -675,53 +690,48 @@ export default function ParadasPage() {
               {/* ─────────── PASO 1: Selección de Máquina ─────────── */}
               {pasoActual === 1 && (
                 <div>
-                  <h3 style={{ marginBottom: 18, fontSize: '1rem', color: '#C4B5FD', fontWeight: 600 }}>
+                  <h3 style={{ marginBottom: 18, fontSize: '1rem', color: 'var(--hmi-text-main)', fontFamily: 'var(--font-ui)', fontWeight: 700 }}>
                     1. Seleccionar la Máquina Afectada
                   </h3>
                   <div className="grid-3" style={{ marginBottom: 20 }}>
                     {MAQUINAS_PREDEFINIDAS.map(({ name, Icon, iconColor }) => {
-                      const isSelected = form.maquina === name;
-                      return (
-                        <div
-                          key={name}
-                          style={{
-                            ...S.maquinaCard,
-                            ...(isSelected ? S.maquinaCardSelected : {}),
-                          }}
-                          onMouseEnter={e => handleMaquinaEnter(e, isSelected)}
-                          onMouseLeave={e => handleMaquinaLeave(e, isSelected)}
-                          onClick={() => {
-                            setForm(f => ({ ...f, maquina: name }));
-                            setPasoActual(2);
-                          }}
-                        >
-                          {/* Ícono Lucide estilizado */}
-                          <div style={{
-                            ...S.iconWrap,
-                            ...(isSelected ? {
-                              background: 'rgba(124,58,237,0.22)',
-                              borderColor: 'rgba(124,58,237,0.55)',
-                            } : {}),
-                          }}>
-                            <Icon size={26} style={{ color: isSelected ? '#EDE9F8' : iconColor }} />
-                          </div>
-                          <span style={{
-                            fontWeight: 700,
-                            fontSize: '0.9rem',
-                            color: isSelected ? '#EDE9F8' : '#C4B5FD',
-                            letterSpacing: '0.2px',
-                          }}>
-                            {name}
-                          </span>
-                        </div>
-                      );
+                       const isSelected = form.maquina === name;
+                       return (
+                         <div
+                           key={name}
+                           style={{
+                             ...S.maquinaCard,
+                             ...(isSelected ? S.maquinaCardSelected : {}),
+                           }}
+                           onMouseEnter={e => handleMaquinaEnter(e, isSelected)}
+                           onMouseLeave={e => handleMaquinaLeave(e, isSelected)}
+                           onClick={() => {
+                             setForm(f => ({ ...f, maquina: name }));
+                             setSelectedMaquina(name);
+                             setPasoActual(2);
+                           }}
+                         >
+                           {/* Ícono Lucide estilizado */}
+                           <div style={S.iconWrap}>
+                             <Icon size={26} style={{ color: isSelected ? 'var(--hmi-accent)' : 'var(--hmi-text-muted)' }} />
+                           </div>
+                           <span style={{
+                             fontWeight: 700,
+                             fontSize: '0.9rem',
+                             color: isSelected ? 'var(--hmi-accent)' : 'var(--hmi-text-main)',
+                             letterSpacing: '0.2px',
+                           }}>
+                             {name}
+                           </span>
+                         </div>
+                       );
                     })}
                   </div>
 
                   {/* Input manual */}
                   <div style={{
                     marginTop: 20,
-                    borderTop: '1px solid rgba(124,58,237,0.12)',
+                    borderTop: '1px solid var(--hmi-bg-surface-elevated)',
                     paddingTop: 20,
                   }}>
                     <label style={{
@@ -733,24 +743,63 @@ export default function ParadasPage() {
                       letterSpacing: '0.6px',
                       marginBottom: 8,
                     }}>
-                      O ingresar otra máquina manualmente
+                      O seleccionar otra máquina del catálogo
                     </label>
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <input
-                        id="inp-maquina-manual"
-                        style={S.inputManual}
-                        value={form.maquina}
-                        onFocus={handleInputFocus}
-                        onBlur={handleInputBlur}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (form.maquina.trim()) setPasoActual(2);
-                          }
-                        }}
-                        onChange={e => setForm(f => ({ ...f, maquina: e.target.value }))}
-                        placeholder="Escribir nombre de la máquina (Ej: Mandrinadora 4)..."
-                      />
+                    <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+                      <div style={{ position: 'relative', flex: 1, zIndex: 20 }}>
+                        <div
+                          id="sel-maquina-catalog"
+                          onClick={() => setIsOpen(!isOpen)}
+                          style={{
+                            ...S.selectMaquina,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderColor: isOpen ? 'var(--hmi-accent)' : 'var(--hmi-bg-surface-elevated)',
+                          }}
+                        >
+                          <span>{selectedMaquina || '-- Seleccione otra máquina --'}</span>
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="12" 
+                            height="8" 
+                            viewBox="0 0 12 8"
+                            style={{
+                              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transition: 'transform 0.2s ease',
+                            }}
+                          >
+                            <path d="M1 1l5 5 5-5" stroke="var(--hmi-accent)" strokeWidth="2" fill="none" />
+                          </svg>
+                        </div>
+                        {isOpen && (
+                          <div 
+                            className="custom-dropdown-options"
+                            style={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: 0,
+                              width: '100%',
+                              zIndex: 50,
+                              marginTop: 4,
+                            }}
+                          >
+                            {maquinasCatalogo.map(name => (
+                              <div
+                                key={name}
+                                className="custom-dropdown-option"
+                                onClick={() => {
+                                  setSelectedMaquina(name);
+                                  setForm(f => ({ ...f, maquina: name }));
+                                  setIsOpen(false);
+                                }}
+                              >
+                                {name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <button
                         type="button"
                         style={S.btnContinuar}
@@ -769,15 +818,16 @@ export default function ParadasPage() {
               {/* ─────────── PASO 2: Selección de Causa ─────────── */}
               {pasoActual === 2 && (
                 <div>
-                  <h3 style={{ marginBottom: 18, fontSize: '1rem', color: '#C4B5FD', fontWeight: 600 }}>
+                  <h3 style={{ marginBottom: 18, fontSize: '1rem', color: 'var(--hmi-text-main)', fontFamily: 'var(--font-ui)', fontWeight: 700 }}>
                     2. Causa de Parada en{' '}
-                    <span style={{ color: '#818CF8', fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ color: 'var(--hmi-accent)', fontFamily: 'var(--font-mono)' }}>
                       {form.maquina}
                     </span>
                   </h3>
                   <div className="grid-3" style={{ marginBottom: 24 }}>
                     {CAUSAS.map(c => {
                       const isSelected = form.causa === c.value;
+                      const Icon = c.Icon;
                       return (
                         <button
                           key={c.value}
@@ -793,7 +843,8 @@ export default function ParadasPage() {
                             setPasoActual(3);
                           }}
                         >
-                          {c.label}
+                          <Icon size={24} style={{ color: isSelected ? 'var(--hmi-accent)' : 'var(--hmi-text-muted)', transition: 'color 0.2s ease' }} />
+                          <span>{c.label}</span>
                         </button>
                       );
                     })}
@@ -813,7 +864,7 @@ export default function ParadasPage() {
               {/* ─────────── PASO 3: Confirmación y Detalles ─────────── */}
               {pasoActual === 3 && (
                 <div>
-                  <h3 style={{ marginBottom: 18, fontSize: '1rem', color: '#C4B5FD', fontWeight: 600 }}>
+                  <h3 style={{ marginBottom: 18, fontSize: '1rem', color: 'var(--hmi-text-main)', fontFamily: 'var(--font-ui)', fontWeight: 700 }}>
                     3. Detalles Finales y Confirmación
                   </h3>
 
@@ -824,7 +875,7 @@ export default function ParadasPage() {
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.7px',
-                      color: 'rgba(124,58,237,0.7)',
+                      color: 'var(--hmi-accent)',
                       fontFamily: 'var(--font-mono)',
                       marginBottom: 14,
                     }}>
@@ -833,13 +884,13 @@ export default function ParadasPage() {
                     <div className="grid-2">
                       <div>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Máquina:</span>{' '}
-                        <strong style={{ color: '#EDE9F8', fontFamily: 'var(--font-mono)', fontSize: '0.88rem' }}>
+                        <strong style={{ color: 'var(--hmi-text-main)', fontFamily: 'var(--font-mono)', fontSize: '0.88rem' }}>
                           {form.maquina}
                         </strong>
                       </div>
                       <div>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Causa:</span>{' '}
-                        <strong style={{ color: '#EDE9F8', fontSize: '0.88rem' }}>
+                        <strong style={{ color: 'var(--hmi-text-main)', fontSize: '0.88rem' }}>
                           {CAUSAS.find(c => c.value === form.causa)?.label || form.causa}
                         </strong>
                       </div>
@@ -847,20 +898,70 @@ export default function ParadasPage() {
                   </div>
 
                   <div className="grid-2" style={{ marginBottom: 24 }}>
-                    <div className="form-group">
+                    <div className="form-group" style={{ position: 'relative', zIndex: 20 }}>
                       <label className="form-label">HP Asociada (opcional)</label>
-                      <select
-                        className="form-control"
-                        value={form.idHp}
-                        onChange={e => setForm(f => ({ ...f, idHp: e.target.value }))}
+                      <div
+                        id="sel-hp-asociada"
+                        onClick={() => setIsHpOpen(!isHpOpen)}
+                        style={{
+                          ...S.selectMaquina,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderColor: isHpOpen ? 'var(--hmi-accent)' : 'var(--hmi-bg-surface-elevated)',
+                        }}
                       >
-                        <option value="">Sin HP asociada</option>
-                        {hps.map(h => (
-                          <option key={h.idHp} value={h.idHp}>
-                            {h.idHp} — {h.pieza || h.descripcion}
-                          </option>
-                        ))}
-                      </select>
+                        <span>{selectedHpLabel}</span>
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          width="12" 
+                          height="8" 
+                          viewBox="0 0 12 8"
+                          style={{
+                            transform: isHpOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                          }}
+                        >
+                          <path d="M1 1l5 5 5-5" stroke="var(--hmi-accent)" strokeWidth="2" fill="none" />
+                        </svg>
+                      </div>
+                      {isHpOpen && (
+                        <div 
+                          className="custom-dropdown-options"
+                          style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            width: '100%',
+                            zIndex: 50,
+                            marginTop: 4,
+                          }}
+                        >
+                          <div
+                            className="custom-dropdown-option"
+                            style={{ height: 44, display: 'flex', alignItems: 'center' }}
+                            onClick={() => {
+                              setForm(f => ({ ...f, idHp: '' }));
+                              setIsHpOpen(false);
+                            }}
+                          >
+                            Sin HP asociada
+                          </div>
+                          {hps.map(h => (
+                            <div
+                              key={h.idHp}
+                              className="custom-dropdown-option"
+                              style={{ height: 44, display: 'flex', alignItems: 'center' }}
+                              onClick={() => {
+                                setForm(f => ({ ...f, idHp: h.idHp }));
+                                setIsHpOpen(false);
+                              }}
+                            >
+                              {h.idHp} — {h.pieza || h.descripcion}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="form-group">
                       <label className="form-label">Descripción Adicional (opcional)</label>
@@ -868,7 +969,7 @@ export default function ParadasPage() {
                         className="form-control"
                         value={form.descripcion}
                         onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
-                        placeholder="Detalles sobre la falla o situación..."
+                        placeholder="Detalles sobre la falla o situation..."
                       />
                     </div>
                   </div>
@@ -886,10 +987,29 @@ export default function ParadasPage() {
                       id="btn-iniciar-parada"
                       type="submit"
                       disabled={cargando || loadingGlobal}
-                      className="btn-giant yellow"
-                      style={{ flex: 1, minHeight: 60, fontSize: '1.05rem' }}
+                      style={{
+                        flex: 1,
+                        minHeight: 60,
+                        fontSize: '1.05rem',
+                        background: 'var(--hmi-accent)',
+                        color: '#1A2E39',
+                        border: 'none',
+                        borderRadius: 4,
+                        fontFamily: 'var(--font-ui)',
+                        fontWeight: 900,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.75px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 12,
+                        boxShadow: 'none',
+                        filter: 'none',
+                        transition: 'opacity 0.2s ease',
+                      }}
                     >
-                      <Zap size={20} />
+                      <Zap size={20} stroke="#1A2E39" />
                       {cargando || loadingGlobal ? 'Registrando...' : 'REGISTRAR PARADA TÉCNICA'}
                     </button>
                   </div>
@@ -909,10 +1029,10 @@ export default function ParadasPage() {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '18px 24px',
-          borderBottom: '1px solid rgba(124,58,237,0.12)',
+          borderBottom: '1px solid var(--hmi-bg-surface-elevated)',
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: '0.95rem' }}>
-            <FileText size={16} style={{ color: '#A78BFA' }} />
+            <FileText size={16} style={{ color: 'var(--hmi-accent)' }} />
             Justificación Automática para RRHH
           </span>
         </div>

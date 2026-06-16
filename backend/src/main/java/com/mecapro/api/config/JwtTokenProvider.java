@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,9 +15,15 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    // Clave secreta fuerte para HS256 (mínimo 256 bits / 32 caracteres)
-    private static final String SECRET_RAW = "MecaProMESSuperStrongSecretKeyForHS256AlgorithmMustBeAtLeast32BytesLong!";
-    private final SecretKey secretKey = Keys.hmacShaKeyFor(SECRET_RAW.getBytes(StandardCharsets.UTF_8));
+    @Value("${jwt.secret}")
+    private String secretRaw;
+    
+    private SecretKey secretKey;
+    
+    @PostConstruct
+    public void init() {
+        this.secretKey = Keys.hmacShaKeyFor(secretRaw.getBytes(StandardCharsets.UTF_8));
+    }
     
     // Expiración del token: 24 horas (en milisegundos)
     private static final long EXPIRATION_TIME_MS = 86400000L;

@@ -32,24 +32,24 @@ export default function NavBar({ operario, onLogout }) {
       {/* ── Brand ── */}
       <div className="navbar-brand">
         <div style={{
-          width: 32, height: 32,
-          background: 'linear-gradient(135deg, rgba(124,58,237,0.30), rgba(37,99,235,0.20))',
-          border: '1px solid rgba(124,58,237,0.35)',
-          borderRadius: 8,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 10px rgba(124,58,237,0.25)',
+          width: 32,
+          height: 32,
+          background: 'var(--hmi-bg-surface)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: 4,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           flexShrink: 0,
         }}>
           <span style={{
-            fontSize: '0.7rem', fontWeight: 900,
-            background: 'linear-gradient(135deg, #A78BFA, #7C3AED)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            fontSize: '0.7rem',
+            fontWeight: 900,
+            color: 'var(--hmi-accent)',
           }}>M</span>
         </div>
-        <span className="navbar-logo">
-          MECA-PRO <span>MES v1.0</span>
+        <span className="navbar-logo" style={{ color: '#FFFFFF' }}>
+          MECA-PRO <span style={{ color: 'var(--hmi-text-muted)' }}>MES v1.0</span>
         </span>
       </div>
 
@@ -77,29 +77,36 @@ export default function NavBar({ operario, onLogout }) {
         </span>
 
         {/* Separador */}
-        <div style={{ width: 1, height: 20, background: 'rgba(124,58,237,0.25)' }} />
+        <div style={{ width: 1, height: 20, background: 'var(--hmi-bg-surface-elevated)' }} />
 
         {/* Operario */}
         {operario && (
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            background: 'rgba(124,58,237,0.08)',
-            border: '1px solid rgba(124,58,237,0.18)',
-            borderRadius: 99,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'rgba(253, 128, 46, 0.08)',
+            border: '1px solid rgba(253, 128, 46, 0.25)',
+            borderRadius: 'var(--radius-sm)',
             padding: '4px 12px 4px 8px',
           }}>
             <div style={{
-              width: 22, height: 22,
-              background: 'rgba(124,58,237,0.22)',
-              border: '1px solid rgba(124,58,237,0.35)',
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 22,
+              height: 22,
+              background: 'rgba(253, 128, 46, 0.2)',
+              border: '1px solid var(--hmi-accent)',
+              borderRadius: 'var(--radius-sm)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}>
-              <User size={11} style={{ color: '#A78BFA' }} />
+              <User size={11} style={{ color: 'var(--hmi-accent)' }} />
             </div>
             <span style={{
-              fontSize: '0.78rem', fontWeight: 600,
-              color: '#C4B5FD', fontFamily: 'var(--font-mono)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: 'var(--hmi-text-main)',
+              fontFamily: 'var(--font-mono)',
               letterSpacing: '0.2px',
             }}>
               {operario}
@@ -113,25 +120,29 @@ export default function NavBar({ operario, onLogout }) {
             onClick={onLogout}
             title="Cerrar sesión"
             style={{
-              display:     'inline-flex', alignItems: 'center', gap: 5,
-              padding:     '5px 12px',
-              fontSize:    '0.75rem', fontWeight: 700, fontFamily: 'var(--font-ui)',
-              color:       '#94A3B8',
-              background:  'transparent',
-              border:      '1px solid rgba(124,58,237,0.15)',
-              borderRadius: 8,
-              cursor:      'pointer',
-              transition:  'all 0.18s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '5px 12px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              fontFamily: 'var(--font-ui)',
+              color: '#94A3B8',
+              background: 'transparent',
+              border: '1px solid var(--hmi-bg-surface-elevated)',
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background   = 'rgba(239,68,68,0.10)';
-              e.currentTarget.style.borderColor  = 'rgba(239,68,68,0.35)';
-              e.currentTarget.style.color        = '#FCA5A5';
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+              e.currentTarget.style.color = '#FFAAAA';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background   = 'transparent';
-              e.currentTarget.style.borderColor  = 'rgba(124,58,237,0.15)';
-              e.currentTarget.style.color        = '#94A3B8';
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
+              e.currentTarget.style.color = '#94A3B8';
             }}
           >
             <LogOut size={12} /> Salir

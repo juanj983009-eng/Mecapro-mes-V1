@@ -41,7 +41,7 @@ export const useUiStore = create((set, get) => ({
     set({ loadingGlobal: true });
     try {
       const [tiemposRes, paradasRes] = await Promise.all([
-        tiemposApi.historialOperario(dniOperario),
+        tiemposApi.historialOperario(),
         paradasApi.historialOperario(dniOperario)
       ]);
 

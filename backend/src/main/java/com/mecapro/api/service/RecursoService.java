@@ -1,15 +1,18 @@
 package com.mecapro.api.service;
 
 import com.mecapro.api.dto.RecursoDTO;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RecursoService {
     
-    List<RecursoDTO> listarActivos();
+    Page<RecursoDTO> listarActivos(Pageable pageable);
     
-    List<RecursoDTO> listarEpps();
+    Page<RecursoDTO> listarEpps(Pageable pageable);
     
-    List<RecursoDTO> listarHerramientas();
+    Page<RecursoDTO> listarHerramientas(Pageable pageable);
+
+    Page<RecursoDTO> listarHerramientasPorCategoria(String categoria, Pageable pageable);
     
-    List<RecursoDTO> listarStockBajo();
+    Page<RecursoDTO> listarStockBajo(Pageable pageable);
 }

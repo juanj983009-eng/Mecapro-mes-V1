@@ -3,156 +3,137 @@ import './SplashScreen.css';
 
 export default function SplashScreen({ onComplete }) {
   const [porcentaje, setPorcentaje] = useState(0);
-  const [subTexto, setSubTexto] = useState("INITIALIZING SYSTEM CORE...");
+  const [sysStatus, setSysStatus] = useState("RUNNING");
+  const [fadeOut, setFadeOut] = useState(false);
 
+  // Animación del porcentaje de 0 a 100 en 500ms (10ms * 50 incrementos de 2)
   useEffect(() => {
-    // 1800ms total loading time (18ms * 100 increments)
-    const intervalTime = 18;
-    
     let current = 0;
     const timer = setInterval(() => {
-      current += 1;
+      current += 2;
       if (current >= 100) {
         setPorcentaje(100);
         clearInterval(timer);
-        
-        // Slight delay of 200ms for clean transition
-        setTimeout(() => {
-          if (onComplete) onComplete();
-        }, 200);
       } else {
         setPorcentaje(current);
-        
-        // Dynamically change visual status texts
-        if (current > 85) {
-          setSubTexto("SYNCHRONIZING PRODUCTION METRICS...");
-        } else if (current > 60) {
-          setSubTexto("CONNECTING TO PLANT HMI SENSORS...");
-        } else if (current > 35) {
-          setSubTexto("LOADING ASSETS & SYNCING...");
-        } else if (current > 15) {
-          setSubTexto("INITIALIZING SYSTEM CORE...");
+      }
+    }, 10);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Ciclo de vida asíncrono y concurrencia
+  useEffect(() => {
+    let isMounted = true;
+    let fadeTimeout = null;
+
+    const loadOperation = async () => {
+      // Promesa de duración mínima de 500ms
+      const minDelay = new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Promesa de validación de conexión con el backend
+      const apiCheck = new Promise(async (resolve, reject) => {
+        try {
+          const url = process.env.REACT_APP_API_URL || process.env.VITE_API_URL || 'http://localhost:8081/api';
+          const healthUrl = url.replace('/api', '/actuator/health');
+          const res = await fetch(healthUrl, { mode: 'cors' });
+          if (res.ok) {
+            resolve();
+          } else {
+            reject(new Error("Health check returned status " + res.status));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      // Timeout absoluto de 800ms para cortocircuitar si el backend tarda en responder
+      const absoluteTimeout = new Promise(resolve => setTimeout(() => {
+        resolve("TIMEOUT_FORCED");
+      }, 800));
+
+      try {
+        // Ejecución concurrente
+        await Promise.race([
+          Promise.all([apiCheck, minDelay]).then(() => "SUCCESS"),
+          absoluteTimeout
+        ]);
+
+        if (isMounted) {
+          setFadeOut(true);
+          fadeTimeout = setTimeout(() => {
+            if (onComplete) onComplete();
+          }, 300); // 300ms de transición CSS
+        }
+      } catch (error) {
+        // Excepción silenciosa, actualizando a DEGRADED sin colgar el UI-Thread
+        console.warn("System Status: DEGRADED", error);
+        if (isMounted) {
+          setSysStatus("DEGRADED");
+          setFadeOut(true);
+          fadeTimeout = setTimeout(() => {
+            if (onComplete) onComplete();
+          }, 300);
         }
       }
-    }, intervalTime);
+    };
 
-    return () => clearInterval(timer);
+    loadOperation();
+
+    return () => {
+      isMounted = false;
+      if (fadeTimeout) clearTimeout(fadeTimeout);
+    };
   }, [onComplete]);
 
-  // Circular HUD calculations
-  const radius = 90;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (porcentaje / 100) * circumference;
+  // Selección de texto de diagnóstico dinámico
+  const getDiagnostico = () => {
+    if (porcentaje < 33) return "SYNCHRONIZING TRACEABILITY PIPELINE...";
+    if (porcentaje < 66) return "VALIDATING BROKER CONNECTION...";
+    return "FETCHING CORE PRODUCTION METRICS...";
+  };
+
+  const SEGMENTOS_COUNT = 20;
 
   return (
-    <div className="splash-screen-container">
-      {/* Decorative layout elements */}
+    <div className={`splash-screen-container ${fadeOut ? 'fade-out' : ''}`}>
       <div className="splash-grid-overlay"></div>
-      <div className="splash-glow-orb"></div>
-
       <div className="splash-content">
-        {/* Top Header */}
+        
+        {/* Cabecera HUD */}
         <div className="splash-header">
-          <div className="splash-tag">HMI SYSTEM PROTOCOL</div>
+          <div className="splash-tag">HMI SYSTEM MONITOR</div>
           <h1 className="splash-title">
             MECA-PRO MES <span className="version-tag">v1.1</span>
           </h1>
           <div className="splash-line"></div>
         </div>
 
-        {/* Central HUD Ring */}
-        <div className="splash-hud-container">
-          <svg className="splash-hud-svg" width="240" height="240" viewBox="0 0 240 240">
-            {/* Outer spinning ring (Clockwise) */}
-            <circle
-              className="hud-ring-outer"
-              cx="120"
-              cy="120"
-              r="110"
-              fill="none"
-              stroke="var(--accent-purple, #7C3AED)"
-              strokeWidth="2"
-              strokeDasharray="15 30 45 30"
-              opacity="0.4"
-            />
-            {/* Inner spinning ring (Counter-clockwise) */}
-            <circle
-              className="hud-ring-inner"
-              cx="120"
-              cy="120"
-              r="100"
-              fill="none"
-              stroke="var(--accent-purple, #7C3AED)"
-              strokeWidth="1.5"
-              strokeDasharray="6 8"
-              opacity="0.6"
-            />
-            {/* Base track circle */}
-            <circle
-              cx="120"
-              cy="120"
-              r={radius}
-              fill="none"
-              stroke="rgba(124, 58, 237, 0.08)"
-              strokeWidth="6"
-            />
-            {/* Progress fill circle */}
-            <circle
-              className="hud-progress-fill"
-              cx="120"
-              cy="120"
-              r={radius}
-              fill="none"
-              stroke="var(--accent-purple, #7C3AED)"
-              strokeWidth="6"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              transform="rotate(-90 120 120)"
-            />
-            {/* Progress glow circle */}
-            <circle
-              className="hud-progress-glow"
-              cx="120"
-              cy="120"
-              r={radius}
-              fill="none"
-              stroke="var(--accent-purple, #7C3AED)"
-              strokeWidth="6"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              transform="rotate(-90 120 120)"
-              opacity="0.5"
-            />
-          </svg>
-
-          {/* Central Percentage */}
-          <div className="hud-center-text">
-            <span className="hud-percentage" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {porcentaje}
-            </span>
-            <span className="hud-percent-symbol">%</span>
+        {/* Barra de progreso segmentada industrial */}
+        <div className="segmented-bar-container">
+          <div className="segmented-bar">
+            {Array.from({ length: SEGMENTOS_COUNT }).map((_, i) => {
+              const active = porcentaje >= ((i + 1) / SEGMENTOS_COUNT) * 100;
+              return (
+                <div 
+                  key={i} 
+                  className={`segment ${active ? 'active' : ''}`}
+                />
+              );
+            })}
           </div>
         </div>
 
-        {/* Lower Loader Bar */}
-        <div className="splash-loader-bar-wrapper">
-          <div className="splash-loader-bar-container">
-            <div className="splash-loader-bar-fill" style={{ width: `${porcentaje}%` }}>
-              <div className="splash-loader-bar-glow"></div>
-            </div>
-          </div>
-          <div className="splash-loader-bar-metrics">
-            <span>SYS_STATUS: RUNNING</span>
-            <span className="text-mono">HEX_DEC: 0x{porcentaje.toString(16).toUpperCase().padStart(2, '0')}</span>
-          </div>
+        {/* Métricas de sistema monoespaciadas */}
+        <div className="splash-metrics">
+          <span className="metric-item">SYS_STATUS: {sysStatus}</span>
+          <span className="metric-item font-mono">{porcentaje}% COMPLETE</span>
+          <span className="metric-item font-mono">0x{porcentaje.toString(16).toUpperCase().padStart(2, '0')}</span>
         </div>
 
-        {/* Bottom Status */}
+        {/* Diagnóstico inferior de terminal */}
         <div className="splash-footer">
-          <div className="splash-status-text">{subTexto}</div>
-          <div className="splash-sub-status">SECURE PIPELINE ESTABLISHED // TLS_AES_256_GCM</div>
+          <div className="splash-status-text">{getDiagnostico()}</div>
+          <div className="splash-sub-status">SECURE HMI CONNECTION // TLS_AES_256_GCM</div>
         </div>
       </div>
     </div>

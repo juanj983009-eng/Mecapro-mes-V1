@@ -37,9 +37,10 @@ public class TiempoController {
         return ResponseEntity.ok(tiempoService.terminarActividad(principal.getName(), justificacion));
     }
 
-    @GetMapping("/historial/operario/{dni}")
-    public ResponseEntity<List<RegistroTiempoResponse>> historialOperario(@PathVariable String dni) {
-        return ResponseEntity.ok(tiempoService.historialPorOperario(dni));
+    @GetMapping("/historial/mi-registro")
+    public ResponseEntity<List<RegistroTiempoResponse>> historialOperario() {
+        String dniLogueado = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(tiempoService.historialPorOperario(dniLogueado));
     }
 
     @GetMapping("/historial/hp/{idHp}")

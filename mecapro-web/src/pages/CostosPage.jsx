@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { costosApi, hpsApi } from '../api';
 import AlertaBanner from '../components/AlertaBanner';
-import { DollarSign, PlusCircle, TrendingUp, BarChart3, CheckCircle2, Save } from 'lucide-react';
+import { DollarSign, PlusCircle, TrendingUp, BarChart3, CheckCircle2, Save, Users, Package, Wrench, Factory, Pin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { HMI_FADE_IN } from '../constants/theme';
 
 /* ─────────────────────────────────────────────────────────────
    Configuración de conceptos
 ───────────────────────────────────────────────────────────── */
 const CONCEPTOS = [
-  { value: 'MANO_OBRA',   label: '👷 Mano de Obra' },
-  { value: 'MATERIAL',    label: '🪨 Material' },
-  { value: 'HERRAMENTAL', label: '🔧 Herramental' },
-  { value: 'OVERHEAD',    label: '🏭 Overhead' },
-  { value: 'OTRO',        label: '📌 Otro' },
+  { value: 'MANO_OBRA',   label: 'Mano de Obra', Icon: Users },
+  { value: 'MATERIAL',    label: 'Material',     Icon: Package },
+  { value: 'HERRAMENTAL', label: 'Herramental',   Icon: Wrench },
+  { value: 'OVERHEAD',    label: 'Overhead',     Icon: Factory },
+  { value: 'OTRO',        label: 'Otro',         Icon: Pin },
 ];
 
 /* Colores de acento por concepto — Midnight Amethyst */
@@ -38,13 +40,13 @@ const DNI_OPERARIO = localStorage.getItem('mecapro_dni') || '77777777';
 const fmt = (m) =>
   new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(m ?? 0);
 
-/* Focus/Blur handlers para selects — glow violeta */
+/* Focus/Blur handlers para selects — cromo y Pumpkin */
 const handleSelectFocus = (e) => {
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.65)';
-  e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(124,58,237,0.20)';
+  e.currentTarget.style.borderColor = 'var(--hmi-accent)';
+  e.currentTarget.style.boxShadow   = 'none';
 };
 const handleSelectBlur = (e) => {
-  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)';
+  e.currentTarget.style.borderColor = 'var(--hmi-bg-surface-elevated)';
   e.currentTarget.style.boxShadow   = 'none';
 };
 
@@ -92,13 +94,14 @@ function EmptyState() {
   return (
     <div>
       {/* KPI Placeholder Cards */}
-      <div className="grid-3" style={{ marginBottom: 28 }}>
-        {PLACEHOLDERS.map(({ icon: Icon, label, value, sub, accent, glow }) => (
-          <div
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 24, marginBottom: 28 }}>
+        {PLACEHOLDERS.map(({ icon: Icon, label, value, sub }) => (
+          <motion.div
             key={label}
             className="stat-card"
+            {...HMI_FADE_IN}
             style={{
-              borderLeft: `4px solid ${accent}`,
+              gridColumn: 'span 4',
               opacity: 0.65,
               filter: 'saturate(0.7)',
             }}
@@ -106,14 +109,14 @@ function EmptyState() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <div style={{
                 width: 36, height: 36,
-                background: glow,
-                border: `1px solid ${accent}30`,
-                borderRadius: 9,
+                background: 'var(--hmi-bg-surface-elevated)',
+                border: '1px solid var(--hmi-bg-surface-elevated)',
+                borderRadius: 4,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Icon size={18} style={{ color: accent }} />
+                <Icon size={18} style={{ color: 'var(--hmi-text-muted)' }} />
               </div>
-              <span className="stat-label" style={{ color: 'var(--text-muted)' }}>{label}</span>
+              <span className="stat-label" style={{ color: 'var(--hmi-text-muted)' }}>{label}</span>
             </div>
             <span
               className="stat-value"
@@ -121,16 +124,16 @@ function EmptyState() {
                 fontFamily: 'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
                 fontSize: '1.6rem',
-                color: accent,
+                color: 'var(--hmi-text-muted)',
                 opacity: 0.5,
               }}
             >
               {value}
             </span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.3px' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--hmi-text-muted)', fontFamily: 'var(--font-ui)', letterSpacing: '0.3px' }}>
               {sub}
             </span>
-          </div>
+          </motion.div>
         ))}
       </div>
 
@@ -142,30 +145,23 @@ function EmptyState() {
         justifyContent: 'center',
         padding:        '48px 32px',
         background:     'var(--bg-card)',
-        border:         '1px solid rgba(124,58,237,0.12)',
-        borderRadius:   16,
+        border:         '1px solid var(--hmi-bg-surface-elevated)',
+        borderRadius:   4,
         textAlign:      'center',
         position:       'relative',
         overflow:       'hidden',
       }}>
-        {/* Gradiente decorativo de fondo */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(124,58,237,0.08) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Ícono principal con resplandor */}
+        {/* Ícono principal */}
         <div style={{
           width: 80, height: 80,
-          background: 'rgba(124,58,237,0.10)',
-          border: '1px solid rgba(124,58,237,0.22)',
-          borderRadius: 20,
+          background: 'var(--hmi-bg-surface-elevated)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: 4,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 32px rgba(124,58,237,0.18)',
+          boxShadow: 'none',
           marginBottom: 24,
         }}>
-          <BarChart3 size={40} style={{ color: '#A78BFA', opacity: 0.85 }} />
+          <BarChart3 size={40} style={{ color: 'var(--hmi-text-muted)', opacity: 0.85 }} />
         </div>
 
         {/* Título HMI */}
@@ -175,7 +171,7 @@ function EmptyState() {
           fontFamily:    'var(--font-mono)',
           letterSpacing: '1.5px',
           textTransform: 'uppercase',
-          color:         'rgba(124,58,237,0.6)',
+          color:         'var(--hmi-text-muted)',
           marginBottom:  10,
         }}>
           MONITOREO FINANCIERO MES
@@ -184,7 +180,7 @@ function EmptyState() {
         <h2 style={{
           fontSize:     '1.15rem',
           fontWeight:   700,
-          color:        '#EDE9F8',
+          color:        'var(--hmi-text-main)',
           marginBottom: 12,
           letterSpacing: '-0.2px',
         }}>
@@ -194,35 +190,31 @@ function EmptyState() {
         <p style={{
           maxWidth:   520,
           lineHeight: 1.75,
-          color:      '#94A3B8',
+          color:      'var(--hmi-text-muted)',
           fontSize:   '0.88rem',
         }}>
-          Seleccione una <strong style={{ color: '#C4B5FD' }}>Hoja de Proceso</strong> en el panel
+          Seleccione una <strong style={{ color: 'var(--hmi-accent)' }}>Hoja de Proceso</strong> en el panel
           superior para desglosar costos operativos y márgenes de utilidad en tiempo real —
           Mano de Obra, Materiales, Herramental y Overhead.
         </p>
 
         {/* Indicadores de estado en línea */}
         <div style={{ display: 'flex', gap: 10, marginTop: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {['Mano de Obra', 'Materiales', 'Herramental', 'Overhead'].map((item, i) => {
-            const colors = ['#818CF8', '#10B981', '#F59E0B', '#A78BFA'];
-            return (
-              <span key={item} style={{
-                padding:    '4px 12px',
-                borderRadius: 9999,
-                fontSize:   '0.7rem',
-                fontWeight: 700,
-                fontFamily: 'var(--font-mono)',
-                letterSpacing: '0.3px',
-                background: `${colors[i]}18`,
-                color:      colors[i],
-                border:     `1px solid ${colors[i]}30`,
-                opacity:    0.7,
-              }}>
-                {item}
-              </span>
-            );
-          })}
+          {['Mano de Obra', 'Materiales', 'Herramental', 'Overhead'].map((item) => (
+            <span key={item} style={{
+              padding:    '4px 12px',
+              borderRadius: 4,
+              fontSize:   '0.7rem',
+              fontWeight: 700,
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.3px',
+              background: 'var(--hmi-bg-surface-elevated)',
+              color:      'var(--hmi-text-muted)',
+              border:     '1px solid var(--hmi-bg-surface-elevated)',
+            }}>
+              {item}
+            </span>
+          ))}
         </div>
       </div>
     </div>
@@ -278,7 +270,7 @@ export default function CostosPage() {
         moneda:        form.moneda,
         dniRegistradoPor: DNI_OPERARIO,
       });
-      setAlerta({ tipo: 'success', mensaje: `✅ Costo registrado: S/. ${form.monto} (${form.concepto})` });
+      setAlerta({ tipo: 'success', mensaje: `Costo registrado: S/. ${form.monto} (${form.concepto})` });
       setForm({ concepto: '', descripcion: '', monto: '', moneda: 'PEN' });
       setMostrarForm(false);
       cargarCostos();
@@ -296,20 +288,20 @@ export default function CostosPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
         <div style={{
           width: 48, height: 48,
-          background: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(124,58,237,0.10))',
-          border: '1px solid rgba(16,185,129,0.28)',
-          borderRadius: 12,
+          background: 'var(--hmi-bg-surface)',
+          border: '1px solid var(--hmi-bg-surface-elevated)',
+          borderRadius: 4,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 0 16px rgba(16,185,129,0.14)',
+          boxShadow: 'none',
         }}>
-          <DollarSign size={22} style={{ color: '#10B981' }} />
+          <DollarSign size={22} style={{ color: 'var(--hmi-accent)' }} />
         </div>
         <div>
           <h1 className="text-2xl font-black" style={{ lineHeight: 1.15 }}>
             Costos de Producción
           </h1>
           <p style={{
-            fontSize: '0.72rem', color: 'var(--text-muted)',
+            fontSize: '0.72rem', color: 'var(--hmi-text-muted)',
             fontFamily: 'var(--font-mono)', letterSpacing: '0.5px', marginTop: 2,
           }}>
             ANÁLISIS FINANCIERO POR HOJA DE PROCESO
@@ -323,58 +315,56 @@ export default function CostosPage() {
         </div>
       )}
 
-      {/* ════════════════════════════════════
-          Selector de HP — cristal violeta
-      ════════════════════════════════════ */}
+      {/* ── Selector de HP ── */}
       <div style={{
-        background:   'var(--bg-card)',
-        border:       '1px solid rgba(124,58,237,0.15)',
-        borderRadius: 14,
-        padding:      '20px 24px',
+        background: 'var(--hmi-bg-surface)',
+        border: '1px solid var(--hmi-bg-surface-elevated)',
+        borderRadius: 4,
+        padding: '16px',
         marginBottom: 24,
-        boxShadow:    '0 4px 24px rgba(0,0,0,0.35)',
+        boxShadow: 'none',
       }}>
         <label style={{
-          display:       'block',
-          fontSize:      '0.68rem',
-          fontWeight:    700,
+          display: 'block',
+          fontSize: '0.68rem',
+          fontWeight: 600,
           textTransform: 'uppercase',
-          letterSpacing: '0.8px',
-          color:         'rgba(124,58,237,0.70)',
-          fontFamily:    'var(--font-mono)',
-          marginBottom:  10,
+          letterSpacing: '0.05em',
+          color: 'var(--hmi-text-muted)',
+          fontFamily: 'var(--font-ui)',
+          marginBottom: 10,
         }}>
           Seleccionar Hoja de Proceso
         </label>
         <select
           style={{
-            width:        '100%',
-            background:   '#1A1625',
-            border:       '1px solid rgba(124,58,237,0.25)',
-            borderRadius: 10,
-            color:        '#C4B5FD',              /* lavanda claro */
-            padding:      '12px 16px',
-            fontSize:     '0.95rem',
-            fontFamily:   'var(--font-ui)',
-            appearance:   'none',
-            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237C3AED' stroke-width='2' fill='none'/%3E%3C/svg%3E\")",
-            backgroundRepeat:   'no-repeat',
+            width: '100%',
+            background: 'var(--hmi-bg-surface)',
+            border: '1px solid var(--hmi-bg-surface-elevated)',
+            borderRadius: 4,
+            color: 'var(--hmi-text-main)',
+            padding: '12px 16px',
+            fontSize: '0.95rem',
+            fontFamily: 'var(--font-ui)',
+            appearance: 'none',
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FD802E' stroke-width='2' fill='none'/%3E%3C/svg%3E\")",
+            backgroundRepeat: 'no-repeat',
             backgroundPosition: 'right 16px center',
-            cursor:       'pointer',
-            outline:      'none',
-            transition:   'border-color 0.2s ease, box-shadow 0.2s ease',
-            minHeight:    48,
+            cursor: 'pointer',
+            outline: 'none',
+            transition: 'border-color 0.2s ease',
+            minHeight: 48,
           }}
           value={hpSeleccionada}
           onFocus={handleSelectFocus}
           onBlur={handleSelectBlur}
           onChange={e => setHpSeleccionada(e.target.value)}
         >
-          <option value="" style={{ background: '#1A1625', color: '#94A3B8' }}>
+          <option value="" style={{ background: 'var(--hmi-bg-surface)', color: 'var(--hmi-text-muted)' }}>
             Elegir HP...
           </option>
           {hps.map(h => (
-            <option key={h.idHp} value={h.idHp} style={{ background: '#1A1625', color: '#EDE9F8' }}>
+            <option key={h.idHp} value={h.idHp} style={{ background: 'var(--hmi-bg-surface)', color: 'var(--hmi-text-main)' }}>
               {h.idHp} — {h.pieza || h.descripcion}
             </option>
           ))}
@@ -383,12 +373,12 @@ export default function CostosPage() {
           <div style={{
             marginTop: 10, display: 'flex', alignItems: 'center', gap: 6,
             fontSize: '0.72rem', fontFamily: 'var(--font-mono)',
-            color: 'rgba(124,58,237,0.6)',
+            color: 'var(--hmi-accent)',
           }}>
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
-              background: '#7C3AED',
-              boxShadow: '0 0 6px rgba(124,58,237,0.6)',
+              background: 'var(--hmi-accent)',
+              boxShadow: 'none',
               display: 'inline-block',
             }} />
             HP activa — {hpSeleccionada}
@@ -407,20 +397,24 @@ export default function CostosPage() {
       {hpSeleccionada && (
         <>
           {/* ── KPI Cards de Resumen por Concepto ── */}
-          <div className="grid-4" style={{ marginBottom: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 24, marginBottom: 24 }}>
             {CONCEPTOS.map(c => {
               const val   = resumen[c.value];
               const color = CONCEPTO_COLORS[c.value];
               const glow  = CONCEPTO_GLOWS[c.value];
               return (
-                <div
+                <motion.div
                   key={c.value}
                   className="stat-card"
+                  {...HMI_FADE_IN}
                   style={{
-                    borderLeft: `4px solid ${val ? color : 'rgba(124,58,237,0.15)'}`,
+                    gridColumn: 'span 3',
                   }}
                 >
-                  <span className="stat-label">{c.label}</span>
+                  <span className="stat-label" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <c.Icon size={14} style={{ color: 'var(--hmi-text-muted)' }} />
+                    {c.label.toUpperCase()}
+                  </span>
                   <span style={{
                     fontFamily:         'var(--font-mono)',
                     fontVariantNumeric: 'tabular-nums',
@@ -441,16 +435,18 @@ export default function CostosPage() {
                       {((val / (total || 1)) * 100).toFixed(1)}% del total
                     </span>
                   )}
-                </div>
+                </motion.div>
               );
             })}
 
             {/* Tarjeta COSTO TOTAL */}
-            <div className="stat-card" style={{
-              borderLeft: '4px solid #10B981',
-              background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, var(--bg-card) 60%)',
+            <motion.div className="stat-card" {...HMI_FADE_IN} style={{
+              gridColumn: 'span 12',
             }}>
-              <span className="stat-label">💰 COSTO TOTAL</span>
+              <span className="stat-label" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <DollarSign size={14} style={{ color: 'var(--hmi-text-muted)' }} />
+                COSTO TOTAL
+              </span>
               <span style={{
                 fontFamily:         'var(--font-mono)',
                 fontVariantNumeric: 'tabular-nums',
@@ -467,7 +463,7 @@ export default function CostosPage() {
               }}>
                 {costos.length} registros
               </span>
-            </div>
+            </motion.div>
           </div>
 
           {/* ── Btn Registrar Costo ── */}
@@ -479,14 +475,12 @@ export default function CostosPage() {
                 display:    'inline-flex', alignItems: 'center', gap: 7,
                 padding:    '9px 18px',
                 fontSize:   '0.85rem', fontWeight: 700, fontFamily: 'var(--font-ui)',
-                color:      '#FFFFFF',
-                background: mostrarForm
-                  ? 'linear-gradient(135deg, #5B21B6, #4C1D95)'
-                  : 'linear-gradient(135deg, #7C3AED, #5B21B6)',
-                border:     '1px solid rgba(124,58,237,0.5)',
-                borderRadius: 10,
+                color:      '#1A2E39',
+                background: 'var(--hmi-accent)',
+                border:     '1px solid var(--hmi-accent)',
+                borderRadius: 4,
                 cursor:     'pointer',
-                boxShadow:  '0 0 16px rgba(124,58,237,0.25)',
+                boxShadow:  'none',
                 transition: 'all 0.2s ease',
               }}
             >
@@ -499,19 +493,19 @@ export default function CostosPage() {
           {mostrarForm && (
             <div style={{
               background:   'var(--bg-card)',
-              border:       '1px solid rgba(124,58,237,0.18)',
-              borderRadius: 14,
+              border:       '1px solid var(--hmi-bg-surface-elevated)',
+              borderRadius: 4,
               overflow:     'hidden',
               marginBottom: 20,
             }}>
               <div style={{
                 padding:      '18px 24px',
-                borderBottom: '1px solid rgba(124,58,237,0.10)',
+                borderBottom: '1px solid var(--hmi-bg-surface-elevated)',
                 display:      'flex', alignItems: 'center', gap: 8,
                 fontWeight:   700, fontSize: '0.95rem',
               }}>
-                <PlusCircle size={16} style={{ color: '#A78BFA' }} />
-                <span style={{ color: '#C4B5FD' }}>Nuevo Registro de Costo</span>
+                <PlusCircle size={16} style={{ color: 'var(--hmi-accent)' }} />
+                <span style={{ color: 'var(--hmi-text-main)' }}>Nuevo Registro de Costo</span>
               </div>
 
               <div style={{ padding: '20px 24px' }}>
@@ -528,14 +522,15 @@ export default function CostosPage() {
                         onBlur={handleSelectBlur}
                         onChange={e => setForm(f => ({ ...f, concepto: e.target.value }))}
                         style={{
-                          background:  '#1A1625',
-                          border:      '1px solid rgba(124,58,237,0.22)',
-                          color:       '#EDE9F8',
+                          background:  'var(--hmi-bg-surface)',
+                          border:      '1px solid var(--hmi-bg-surface-elevated)',
+                          color:       'var(--hmi-text-main)',
+                          borderRadius: 4,
                         }}
                       >
-                        <option value="">Seleccionar...</option>
+                        <option value="" style={{ background: 'var(--hmi-bg-surface)', color: 'var(--hmi-text-muted)' }}>Seleccionar...</option>
                         {CONCEPTOS.map(c => (
-                          <option key={c.value} value={c.value}>{c.label}</option>
+                          <option key={c.value} value={c.value} style={{ background: 'var(--hmi-bg-surface)', color: 'var(--hmi-text-main)' }}>{c.label}</option>
                         ))}
                       </select>
                     </div>
@@ -553,13 +548,14 @@ export default function CostosPage() {
                         onChange={e => setForm(f => ({ ...f, monto: e.target.value }))}
                         placeholder="0.00"
                         style={{
-                          background:         '#1A1625',
-                          border:             '1px solid rgba(124,58,237,0.22)',
-                          color:              '#10B981',        /* verde para inputs de monto */
+                          background:         'var(--hmi-bg-surface)',
+                          border:             '1px solid var(--hmi-bg-surface-elevated)',
+                          color:              'var(--hmi-text-main)',
                           fontFamily:         'var(--font-mono)',
                           fontVariantNumeric: 'tabular-nums',
                           textAlign:          'right',
                           letterSpacing:      '0.5px',
+                          borderRadius:       4,
                         }}
                       />
                     </div>
@@ -572,9 +568,10 @@ export default function CostosPage() {
                         onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
                         placeholder="Detalle del costo..."
                         style={{
-                          background: '#1A1625',
-                          border:     '1px solid rgba(124,58,237,0.22)',
-                          color:      '#EDE9F8',
+                          background: 'var(--hmi-bg-surface)',
+                          border:     '1px solid var(--hmi-bg-surface-elevated)',
+                          color:      'var(--hmi-text-main)',
+                          borderRadius: 4,
                         }}
                       />
                     </div>
@@ -589,13 +586,13 @@ export default function CostosPage() {
                         padding:     '9px 20px',
                         fontSize:    '0.85rem', fontWeight: 700,
                         fontFamily:  'var(--font-ui)',
-                        color:       '#FFFFFF',
-                        background:  'linear-gradient(135deg, #10B981, #047857)',
-                        border:      '1px solid rgba(16,185,129,0.4)',
-                        borderRadius: 10,
+                        color:       '#1A2E39',
+                        background:  'var(--hmi-accent)',
+                        border:      '1px solid var(--hmi-accent)',
+                        borderRadius: 4,
                         cursor:      cargando ? 'not-allowed' : 'pointer',
                         opacity:     cargando ? 0.7 : 1,
-                        boxShadow:   '0 2px 8px rgba(16,185,129,0.25)',
+                        boxShadow:   'none',
                         transition:  'all 0.2s ease',
                       }}
                     >
@@ -606,6 +603,7 @@ export default function CostosPage() {
                       type="button"
                       className="btn btn-outline"
                       onClick={() => setMostrarForm(false)}
+                      style={{ borderRadius: 4 }}
                     >
                       Cancelar
                     </button>
@@ -615,32 +613,30 @@ export default function CostosPage() {
             </div>
           )}
 
-          {/* ══════════════════════════════════════════════════
-              Tabla de Detalle — Midnight Amethyst
-          ══════════════════════════════════════════════════ */}
+          {/* ── Tabla de Detalle ── */}
           <div style={{
             background:   'var(--bg-card)',
-            border:       '1px solid rgba(124,58,237,0.12)',
-            borderRadius: 14,
+            border:       '1px solid var(--hmi-bg-surface-elevated)',
+            borderRadius: 4,
             overflow:     'hidden',
-            boxShadow:    '0 8px 32px rgba(0,0,0,0.50)',
+            boxShadow:    'none',
           }}>
             {/* Header */}
             <div style={{
               display:      'flex', alignItems: 'center', justifyContent: 'space-between',
               padding:      '18px 24px',
-              borderBottom: '1px solid rgba(124,58,237,0.10)',
+              borderBottom: '1px solid var(--hmi-bg-surface-elevated)',
             }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
-                <TrendingUp size={16} style={{ color: '#A78BFA' }} />
+                <TrendingUp size={16} style={{ color: 'var(--hmi-accent)' }} />
                 Detalle de Costos —{' '}
-                <span style={{ fontFamily: 'var(--font-mono)', color: '#818CF8', fontSize: '0.9rem' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--hmi-text-main)', fontSize: '0.9rem' }}>
                   {hpSeleccionada}
                 </span>
               </span>
               <span style={{
                 fontSize: '0.7rem', fontFamily: 'var(--font-mono)',
-                color: 'rgba(124,58,237,0.6)', letterSpacing: '0.5px',
+                color: 'var(--hmi-accent)', letterSpacing: '0.5px',
               }}>
                 {costos.length} REGISTROS
               </span>
@@ -660,9 +656,9 @@ export default function CostosPage() {
                         fontWeight:    700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.8px',
-                        color:         'rgba(124,58,237,0.70)',
-                        background:    'rgba(124,58,237,0.05)',
-                        borderBottom:  '1px solid rgba(124,58,237,0.10)',
+                        color:         'var(--hmi-text-muted)',
+                        background:    'var(--hmi-bg-surface-elevated)',
+                        borderBottom:  '1px solid var(--hmi-bg-surface-elevated)',
                         fontFamily:    'var(--font-mono)',
                         whiteSpace:    'nowrap',
                       }}
@@ -671,75 +667,72 @@ export default function CostosPage() {
                 </tr>
               </thead>
               <tbody>
-                {costos.map((c, idx) => {
-                  const color = CONCEPTO_COLORS[c.concepto] || '#94A3B8';
-                  const glow  = CONCEPTO_GLOWS[c.concepto]  || 'rgba(148,163,184,0.12)';
-                  return (
-                    <tr
-                      key={c.idCosto}
-                      style={{
-                        background: idx % 2 === 1
-                          ? 'rgba(124,58,237,0.03)' : 'transparent',
-                        transition: 'background 0.15s ease',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(124,58,237,0.07)'}
-                      onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 1
-                        ? 'rgba(124,58,237,0.03)' : 'transparent'}
-                    >
-                      {/* Concepto — badge translúcido con color de acento */}
-                      <td style={{ padding: '13px 16px' }}>
-                        <span style={{
-                          display:       'inline-flex', alignItems: 'center',
-                          padding:       '3px 10px',
-                          borderRadius:  9999,
-                          fontSize:      '0.7rem', fontWeight: 700, letterSpacing: '0.3px',
-                          background:    glow,
-                          color:         color,
-                          whiteSpace:    'nowrap',
-                        }}>
-                          {c.concepto}
-                        </span>
-                      </td>
-
-                      {/* Descripción */}
-                      <td style={{ padding: '13px 16px', color: '#94A3B8', fontSize: '0.85rem' }}>
-                        {c.descripcion || '—'}
-                      </td>
-
-                      {/* Monto — tabular-nums, alineado a la derecha, verde si > 0 */}
-                      <td style={{
-                        padding: '13px 16px',
-                        ...CELL_MONEY,
-                        color:   c.monto > 0 ? '#10B981' : '#94A3B8',
-                        fontSize: '0.92rem',
+                {costos.map((c, idx) => (
+                  <tr
+                    key={c.idCosto}
+                    style={{
+                      background: idx % 2 === 1
+                        ? 'var(--hmi-bg-surface)' : 'transparent',
+                      transition: 'background 0.15s ease',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--hmi-bg-surface-elevated)'}
+                    onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 1
+                      ? 'var(--hmi-bg-surface)' : 'transparent'}
+                  >
+                    {/* Concepto — badge plano cromo neutro */}
+                    <td style={{ padding: '13px 16px' }}>
+                      <span style={{
+                        display:       'inline-flex', alignItems: 'center',
+                        padding:       '3px 10px',
+                        borderRadius:  4,
+                        fontSize:      '0.7rem', fontWeight: 700, letterSpacing: '0.3px',
+                        background:    'var(--hmi-bg-surface-elevated)',
+                        border:        '1px solid var(--hmi-bg-surface-elevated)',
+                        color:         'var(--hmi-text-muted)',
+                        whiteSpace:    'nowrap',
                       }}>
-                        {fmt(c.monto)}
-                      </td>
+                        {c.concepto}
+                      </span>
+                    </td>
 
-                      {/* Registrado Por */}
-                      <td style={{
-                        padding:    '13px 16px',
-                        fontSize:   '0.8rem',
-                        color:      '#94A3B8',
-                        fontFamily: 'var(--font-mono)',
-                      }}>
-                        {c.nombreRegistradoPor || '—'}
-                      </td>
+                    {/* Descripción */}
+                    <td style={{ padding: '13px 16px', color: 'var(--hmi-text-muted)', fontSize: '0.85rem' }}>
+                      {c.descripcion || '—'}
+                    </td>
 
-                      {/* Fecha — tabular-nums, mono */}
-                      <td style={{
-                        padding:            '13px 16px',
-                        fontSize:           '0.76rem',
-                        color:              '#94A3B8',
-                        fontFamily:         'var(--font-mono)',
-                        fontVariantNumeric: 'tabular-nums',
-                        whiteSpace:         'nowrap',
-                      }}>
-                        {new Date(c.fechaRegistro).toLocaleString('es-PE')}
-                      </td>
-                    </tr>
-                  );
-                })}
+                    {/* Monto */}
+                    <td style={{
+                      padding: '13px 16px',
+                      ...CELL_MONEY,
+                      color:   'var(--hmi-text-main)',
+                      fontSize: '0.92rem',
+                    }}>
+                      {fmt(c.monto)}
+                    </td>
+
+                    {/* Registrado Por */}
+                    <td style={{
+                      padding:    '13px 16px',
+                      fontSize:   '0.8rem',
+                      color:      'var(--hmi-text-muted)',
+                      fontFamily: 'var(--font-mono)',
+                    }}>
+                      {c.nombreRegistradoPor || '—'}
+                    </td>
+
+                    {/* Fecha */}
+                    <td style={{
+                      padding:            '13px 16px',
+                      fontSize:           '0.76rem',
+                      color:              'var(--hmi-text-muted)',
+                      fontFamily:         'var(--font-mono)',
+                      fontVariantNumeric: 'tabular-nums',
+                      whiteSpace:         'nowrap',
+                    }}>
+                      {new Date(c.fechaRegistro).toLocaleString('es-PE')}
+                    </td>
+                  </tr>
+                ))}
 
                 {costos.length === 0 && (
                   <tr>
@@ -747,13 +740,13 @@ export default function CostosPage() {
                       colSpan={5}
                       style={{
                         textAlign:  'center',
-                        color:      'var(--text-muted)',
+                        color:      'var(--hmi-text-muted)',
                         padding:    '40px 0',
                         fontFamily: 'var(--font-mono)',
                         fontSize:   '0.85rem',
                       }}
                     >
-                      Sin costos registrados para <strong style={{ color: '#818CF8' }}>{hpSeleccionada}</strong>.
+                      Sin costos registrados para <strong style={{ color: 'var(--hmi-accent)' }}>{hpSeleccionada}</strong>.
                     </td>
                   </tr>
                 )}
@@ -762,7 +755,7 @@ export default function CostosPage() {
               {/* Footer con totales visibles */}
               {costos.length > 0 && (
                 <tfoot>
-                  <tr style={{ borderTop: '1px solid rgba(124,58,237,0.15)' }}>
+                  <tr style={{ borderTop: '1px solid var(--hmi-bg-surface-elevated)' }}>
                     <td colSpan={2} style={{
                       padding:    '13px 16px',
                       fontFamily: 'var(--font-mono)',
@@ -770,7 +763,7 @@ export default function CostosPage() {
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color:      'rgba(124,58,237,0.6)',
+                      color:      'var(--hmi-text-muted)',
                     }}>
                       TOTAL ACUMULADO
                     </td>
@@ -779,7 +772,7 @@ export default function CostosPage() {
                       ...CELL_MONEY,
                       fontSize:   '1rem',
                       fontWeight: 900,
-                      color:      '#10B981',
+                      color:      'var(--hmi-accent)',
                     }}>
                       {fmt(total)}
                     </td>

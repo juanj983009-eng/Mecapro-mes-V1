@@ -80,6 +80,14 @@ CREATE TABLE paradas_tecnicas (
 CREATE INDEX idx_pt_id_hp      ON paradas_tecnicas(id_hp);
 CREATE INDEX idx_pt_reportada  ON paradas_tecnicas(reportada_rrhh);
 
+-- 5.1. MÁQUINAS: Catálogo de activos físicos de planta
+CREATE TABLE maquinas (
+    id_maquina          SERIAL       PRIMARY KEY,
+    nombre_especifico   VARCHAR(100) NOT NULL UNIQUE,
+    tipo                VARCHAR(50)  NOT NULL CHECK (tipo IN ('MAQUINA_CONVENCIONAL', 'MAQUINA_CNC')),
+    activo              BOOLEAN      NOT NULL DEFAULT TRUE
+);
+
 -- 6. CATÁLOGO DE RECURSOS: EPPs y Herramientas
 CREATE TABLE catalogo_recursos (
     id_recurso          SERIAL       PRIMARY KEY,

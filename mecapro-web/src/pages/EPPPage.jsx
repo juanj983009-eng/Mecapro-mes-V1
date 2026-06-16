@@ -55,7 +55,14 @@ export default function EPPPage() {
 
   if (loading) return <div className="loading-overlay"><div className="spinner"></div></div>;
 
-  const categorias = [...new Set(epps.map(e => e.categoria))];
+  const agrupados = epps.reduce((acc, e) => {
+    const cat = e.categoria || 'Sin Categoría';
+    if (!acc[cat]) {
+      acc[cat] = [];
+    }
+    acc[cat].push(e);
+    return acc;
+  }, {});
 
   return (
     <div>
@@ -67,13 +74,15 @@ export default function EPPPage() {
       {alerta && <AlertaBanner tipo={alerta.tipo} mensaje={alerta.mensaje} onClose={() => setAlerta(null)} />}
 
       {/* Catálogo por categoría */}
-      {categorias.map(cat => (
-        <div key={cat} className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header">
-            <span className="card-title">🛡️ {cat}</span>
-          </div>
-          <div className="grid-3">
-            {epps.filter(e => e.categoria === cat).map(epp => (
+      {Object.keys(agrupados).map(cat => {
+        const items = agrupados[cat];
+        return (
+          <div key={cat} className="card" style={{ marginBottom: 20 }}>
+            <div className="card-header">
+              <span className="card-title">🛡️ {cat}</span>
+            </div>
+            <div className="grid-3">
+              {items.map(epp => (
               <div key={epp.idRecurso} style={{
                 background: 'var(--bg-secondary)',
                 border: `1px solid ${epp.stockActual <= epp.stockMinimo ? 'var(--red)' : 'var(--border)'}`,
@@ -111,14 +120,14 @@ export default function EPPPage() {
                     style={{ flex: 1, minHeight: 42 }}
                   >
                     <Send size={14} />
-                    {enviando === epp.idRecurso ? '...' : 'Solicitar'}
+                    {enviando === epp.idRecurso ? 'Procesando...' : 'Solicitar'}
                   </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      ))}
+      )})}
 
       {/* Historial reciente */}
       {historial.length > 0 && (

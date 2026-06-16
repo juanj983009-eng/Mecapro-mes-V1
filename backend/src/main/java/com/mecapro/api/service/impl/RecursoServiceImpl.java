@@ -4,10 +4,10 @@ import com.mecapro.api.dto.RecursoDTO;
 import com.mecapro.api.entity.Recurso;
 import com.mecapro.api.repository.RecursoRepository;
 import com.mecapro.api.service.RecursoService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,34 +20,32 @@ public class RecursoServiceImpl implements RecursoService {
     }
 
     @Override
-    public List<RecursoDTO> listarActivos() {
-        return recursoRepository.findByActivoTrue()
-                .stream()
-                .map(RecursoDTO::from)
-                .toList();
+    public Page<RecursoDTO> listarActivos(Pageable pageable) {
+        return recursoRepository.findByActivoTrue(pageable)
+                .map(RecursoDTO::from);
     }
 
     @Override
-    public List<RecursoDTO> listarEpps() {
-        return recursoRepository.findByTipoRecursoAndActivoTrue(Recurso.TipoRecurso.EPP)
-                .stream()
-                .map(RecursoDTO::from)
-                .toList();
+    public Page<RecursoDTO> listarEpps(Pageable pageable) {
+        return recursoRepository.findByTipoRecursoAndActivoTrue(Recurso.TipoRecurso.EPP, pageable)
+                .map(RecursoDTO::from);
     }
 
     @Override
-    public List<RecursoDTO> listarHerramientas() {
-        return recursoRepository.findByTipoRecursoAndActivoTrue(Recurso.TipoRecurso.HERRAMIENTA)
-                .stream()
-                .map(RecursoDTO::from)
-                .toList();
+    public Page<RecursoDTO> listarHerramientas(Pageable pageable) {
+        return recursoRepository.findByTipoRecursoAndActivoTrue(Recurso.TipoRecurso.HERRAMIENTA, pageable)
+                .map(RecursoDTO::from);
     }
 
     @Override
-    public List<RecursoDTO> listarStockBajo() {
-        return recursoRepository.findRecursosBajoStockMinimo()
-                .stream()
-                .map(RecursoDTO::from)
-                .toList();
+    public Page<RecursoDTO> listarHerramientasPorCategoria(String categoria, Pageable pageable) {
+        return recursoRepository.findByTipoRecursoAndCategoriaAndActivoTrue(Recurso.TipoRecurso.HERRAMIENTA, categoria, pageable)
+                .map(RecursoDTO::from);
+    }
+
+    @Override
+    public Page<RecursoDTO> listarStockBajo(Pageable pageable) {
+        return recursoRepository.findRecursosBajoStockMinimo(pageable)
+                .map(RecursoDTO::from);
     }
 }
